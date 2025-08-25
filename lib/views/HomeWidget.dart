@@ -21,7 +21,10 @@ class _HomeWidgetState extends State<HomeWidget> {
           children: widget.habits
               .map(
                 (habit) => Padding(
-                  padding: EdgeInsetsGeometry.all(8),
+                  padding: EdgeInsetsGeometry.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   child: HabitWidget(habit: habit),
                 ),
               )
