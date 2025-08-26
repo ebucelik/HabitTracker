@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/models/DaysInYear.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
@@ -8,9 +9,10 @@ import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:lottie/lottie.dart';
 
 class HabitWidget extends StatefulWidget {
-  const HabitWidget({super.key, required this.habit});
+  const HabitWidget({super.key, required this.habit, required this.daysInYear});
 
   final Habit habit;
+  final List<DaysInYear> daysInYear;
 
   @override
   State<HabitWidget> createState() => _HabitWidgetState();
@@ -25,6 +27,7 @@ class _HabitWidgetState extends State<HabitWidget> {
   double trackButtonBackgroundWidth = 0;
   double successBackgroundHeight = 0;
   DateTime selectedDate = DateTime.now();
+  bool showNotes = false;
 
   void increaseCounterWhileTrackButtonIsPressed() async {
     if (isLoopActive || isSelectedTimestampTracked()) return;
@@ -50,6 +53,10 @@ class _HabitWidgetState extends State<HabitWidget> {
         counter = 0;
         successBackgroundHeight = 300;
 
+        if (canVibrate) {
+          await Haptics.vibrate(HapticsType.warning);
+        }
+
         setState(() {
           widget.habit.timestamps.add(
             TimestampWithNote(timestamp: selectedDate),
@@ -65,7 +72,9 @@ class _HabitWidgetState extends State<HabitWidget> {
     await Future.delayed(Duration(milliseconds: 3000));
 
     setState(() {
-      successBackgroundHeight = 0;
+      if (mounted) {
+        successBackgroundHeight = 0;
+      }
     });
   }
 
@@ -73,12 +82,35 @@ class _HabitWidgetState extends State<HabitWidget> {
     await Future.delayed(Duration(milliseconds: 1000));
 
     setState(() {
-      trackButtonBackgroundWidth = 0;
+      if (mounted) {
+        trackButtonBackgroundWidth = 0;
+      }
     });
   }
 
   bool isSelectedTimestampTracked() {
     return widget.habit.isSelectedTimestampTracked(selectedDate);
+  }
+
+  void onTrackButtonPressed() async {
+    final canVibrate = await Haptics.canVibrate();
+
+    if (canVibrate) {
+      await Haptics.vibrate(HapticsType.medium);
+    }
+
+    setState(() {
+      if (mounted) {
+        trackButtonBackgroundWidth = 0;
+      }
+
+      widget.habit.timestamps.removeWhere(
+        (timestamp) =>
+            timestamp.timestamp.day == selectedDate.day &&
+            timestamp.timestamp.month == selectedDate.month &&
+            timestamp.timestamp.year == selectedDate.year,
+      );
+    });
   }
 
   @override
@@ -89,99 +121,14 @@ class _HabitWidgetState extends State<HabitWidget> {
         Container(
           width: double.infinity,
           height: 300,
-          padding: EdgeInsets.only(top: 8),
           margin: EdgeInsets.all(4),
           decoration: BoxDecoration(
-            color: widget.habit.color.withAlpha(60),
+            color: AppColors.primary.color(),
             border: Border.all(color: AppColors.primary.color()),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Column(
-            children: [
-              Container(
-                margin: EdgeInsets.fromLTRB(8, 0, 8, 8),
-                child: Row(
-                  spacing: 8,
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: AppColors.unselectedItem.color().withAlpha(70),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(
-                        widget.habit.iconData,
-                        color: widget.habit.color,
-                      ),
-                    ),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.habit.name,
-                            style: TextStyle(
-                              color: AppColors.primary.color(),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            widget.habit.description,
-                            style: TextStyle(
-                              color: AppColors.primary.color(),
-                              fontWeight: FontWeight.normal,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text("🔥", style: TextStyle(fontSize: 30)),
-                    Container(
-                      margin: EdgeInsets.only(right: 8),
-                      child: Text(
-                        widget.habit.streak.toString(),
-                        style: TextStyle(
-                          color: AppColors.primary.color(),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 30,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: Container(
-                  decoration: BoxDecoration(color: AppColors.primary.color()),
-                ),
-              ),
-              Listener(
-                onPointerDown: (_) => {
-                  trackButtonIsPressed = true,
-                  increaseCounterWhileTrackButtonIsPressed(),
-                },
-                onPointerUp: (_) => {
-                  trackButtonIsPressed = false,
-                  counter = 0,
-                  resetTrackButtonBackgroundWidth(),
-                },
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    widthToReach = constraints.widthConstraints().maxWidth;
-
-                    return isSelectedTimestampTracked()
-                        ? GestureDetector(
-                            child: trackButtonWidget(),
-                            onTap: () => {onTrackButtonPressed()},
-                          )
-                        : trackButtonWidget();
-                  },
-                ),
-              ),
-            ],
+            children: [headerWidget(), bodyWidget(), footerWidget()],
           ),
         ),
         AnimatedContainer(
@@ -221,17 +168,182 @@ class _HabitWidgetState extends State<HabitWidget> {
     );
   }
 
-  void onTrackButtonPressed() {
-    setState(() {
-      trackButtonBackgroundWidth = 0;
+  Widget headerWidget() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary.color(),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(10),
+          topRight: Radius.circular(10),
+        ),
+      ),
+      padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+      child: Row(
+        spacing: 8,
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppColors.primary.color().withAlpha(150),
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Icon(widget.habit.iconData, color: widget.habit.color),
+          ),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.habit.name,
+                  style: TextStyle(
+                    color: AppColors.background.color(),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 16,
+                  ),
+                ),
+                Text(
+                  widget.habit.description,
+                  style: TextStyle(
+                    color: AppColors.background.color(),
+                    fontWeight: FontWeight.normal,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text("🔥", style: TextStyle(fontSize: 30)),
+          Container(
+            margin: EdgeInsets.only(right: 8),
+            child: Text(
+              widget.habit.streak.toString(),
+              style: TextStyle(
+                color: AppColors.background.color(),
+                fontWeight: FontWeight.w700,
+                fontSize: 30,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-      widget.habit.timestamps.removeWhere(
-        (timestamp) =>
-            timestamp.timestamp.day == selectedDate.day &&
-            timestamp.timestamp.month == selectedDate.month &&
-            timestamp.timestamp.year == selectedDate.year,
-      );
-    });
+  Widget bodyWidget() {
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.fromLTRB(8, 0, 8, 4),
+        decoration: BoxDecoration(color: AppColors.primary.color()),
+        child: Row(
+          children: [
+            Expanded(
+              child: Container(
+                margin: EdgeInsets.only(bottom: 4),
+                child: GridView.count(
+                  scrollDirection: Axis.horizontal,
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 4,
+                  crossAxisSpacing: 4,
+                  children: widget.daysInYear
+                      .map(
+                        (daysInYear) => Container(
+                          decoration: BoxDecoration(
+                            color: widget.habit.color.withAlpha(70),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            daysInYear.month.isEmpty
+                                ? ""
+                                : daysInYear.month.substring(0, 3),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                      .toList(),
+                ),
+              ),
+            ),
+            showNotes
+                ? Container(
+                    margin: EdgeInsets.all(4),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "12.08.2025",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          "Keine Notizen verfügbar.",
+                          style: TextStyle(fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  )
+                : Container(),
+            Align(
+              alignment: AlignmentGeometry.topCenter,
+              child: Container(
+                height: double.infinity,
+                width: 40,
+                margin: EdgeInsets.fromLTRB(4, 0, 0, 4),
+                decoration: BoxDecoration(
+                  color: widget.habit.color,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: AppColors.unselectedItem.color().withAlpha(100),
+                  ),
+                ),
+                child: IconButton(
+                  color: AppColors.primary.color(),
+                  onPressed: () => {
+                    setState(() {
+                      showNotes = !showNotes;
+                    }),
+                  },
+                  icon: Icon(
+                    showNotes
+                        ? Icons.arrow_forward_rounded
+                        : Icons.arrow_back_rounded,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget footerWidget() {
+    return Listener(
+      onPointerDown: (_) => {
+        trackButtonIsPressed = true,
+        increaseCounterWhileTrackButtonIsPressed(),
+      },
+      onPointerUp: (_) => {
+        trackButtonIsPressed = false,
+        counter = 0,
+        resetTrackButtonBackgroundWidth(),
+      },
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          widthToReach = constraints.widthConstraints().maxWidth;
+
+          return isSelectedTimestampTracked()
+              ? GestureDetector(
+                  child: trackButtonWidget(),
+                  onTap: () => {onTrackButtonPressed()},
+                )
+              : trackButtonWidget();
+        },
+      ),
+    );
   }
 
   Widget trackButtonWidget() {
@@ -259,7 +371,9 @@ class _HabitWidgetState extends State<HabitWidget> {
             height: double.infinity,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.transparent,
+              color: trackButtonIsPressed
+                  ? Colors.grey.withAlpha(30)
+                  : widget.habit.color.withAlpha(150),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(9),
                 bottomRight: Radius.circular(9),
@@ -268,19 +382,17 @@ class _HabitWidgetState extends State<HabitWidget> {
             child: isSelectedTimestampTracked()
                 ? Center(
                     child: Icon(
-                      Icons.check_circle,
+                      Icons.check_circle_outline,
                       size: 30,
                       color: AppColors.primary.color(),
                     ),
                   )
-                : Text(
-                    "TRACK",
-                    style: TextStyle(
+                : Center(
+                    child: Icon(
+                      Icons.check,
+                      size: 30,
                       color: AppColors.primary.color(),
-                      fontSize: 25,
-                      fontWeight: FontWeight.w700,
                     ),
-                    textAlign: TextAlign.center,
                   ),
           ),
         ],

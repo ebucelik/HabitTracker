@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 enum AppColors {
   background("222327"),
   primary("F1F2F0"),
-  unselectedItem("6B7994");
+  unselectedItem("6B7994"),
+  success("95F54E");
 
   const AppColors(this.value);
 
