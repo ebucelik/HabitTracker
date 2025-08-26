@@ -12,7 +12,7 @@ class HabitWidget extends StatefulWidget {
   const HabitWidget({super.key, required this.habit, required this.daysInYear});
 
   final Habit habit;
-  final List<DaysInYear> daysInYear;
+  final List<List<DaysInYear>> daysInYear;
 
   @override
   State<HabitWidget> createState() => _HabitWidgetState();
@@ -71,21 +71,21 @@ class _HabitWidgetState extends State<HabitWidget> {
   void resetSuccessBackgroundHeight() async {
     await Future.delayed(Duration(milliseconds: 3000));
 
-    setState(() {
-      if (mounted) {
+    if (mounted) {
+      setState(() {
         successBackgroundHeight = 0;
-      }
-    });
+      });
+    }
   }
 
   void resetTrackButtonBackgroundWidth() async {
     await Future.delayed(Duration(milliseconds: 1000));
 
-    setState(() {
-      if (mounted) {
+    if (mounted) {
+      setState(() {
         trackButtonBackgroundWidth = 0;
-      }
-    });
+      });
+    }
   }
 
   bool isSelectedTimestampTracked() {
@@ -99,18 +99,18 @@ class _HabitWidgetState extends State<HabitWidget> {
       await Haptics.vibrate(HapticsType.medium);
     }
 
-    setState(() {
-      if (mounted) {
+    if (mounted) {
+      setState(() {
         trackButtonBackgroundWidth = 0;
-      }
 
-      widget.habit.timestamps.removeWhere(
-        (timestamp) =>
-            timestamp.timestamp.day == selectedDate.day &&
-            timestamp.timestamp.month == selectedDate.month &&
-            timestamp.timestamp.year == selectedDate.year,
-      );
-    });
+        widget.habit.timestamps.removeWhere(
+          (timestamp) =>
+              timestamp.timestamp.day == selectedDate.day &&
+              timestamp.timestamp.month == selectedDate.month &&
+              timestamp.timestamp.year == selectedDate.year,
+        );
+      });
+    }
   }
 
   @override
@@ -238,39 +238,69 @@ class _HabitWidgetState extends State<HabitWidget> {
         child: Row(
           children: [
             Expanded(
-              child: Container(
-                margin: EdgeInsets.only(bottom: 4),
-                child: GridView.count(
-                  scrollDirection: Axis.horizontal,
-                  crossAxisCount: 4,
-                  mainAxisSpacing: 4,
-                  crossAxisSpacing: 4,
-                  children: widget.daysInYear
-                      .map(
-                        (daysInYear) => Container(
-                          decoration: BoxDecoration(
-                            color: widget.habit.color.withAlpha(70),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Text(
-                            daysInYear.month.isEmpty
-                                ? ""
-                                : daysInYear.month.substring(0, 3),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )
-                      .toList(),
-                ),
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: widget.daysInYear
+                    .map(
+                      (calendar) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: calendar
+                            .map(
+                              (daysInYear) => daysInYear.days == 0
+                                  ? SizedBox(
+                                      height: 20,
+                                      child: Text(
+                                        daysInYear.month.isEmpty
+                                            ? ""
+                                            : daysInYear.month.substring(0, 3),
+                                        textAlign: TextAlign.start,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 12,
+                                          color: AppColors.background.color(),
+                                        ),
+                                      ),
+                                    )
+                                  : Flexible(
+                                      child: Container(
+                                        height: 40,
+                                        width: 40,
+                                        margin: EdgeInsets.all(3),
+                                        decoration: BoxDecoration(
+                                          color: widget.habit.color.withAlpha(
+                                            widget.habit.isSelectedTimestampTracked(
+                                                      DateTime(
+                                                        daysInYear.year,
+                                                        daysInYear.monthNum,
+                                                        daysInYear.days,
+                                                      ),
+                                                    ) ==
+                                                    true
+                                                ? 255
+                                                : 40,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                            )
+                            .toList(),
+                      ),
+                    )
+                    .toList(),
               ),
             ),
-            showNotes
-                ? Container(
-                    margin: EdgeInsets.all(4),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+            AnimatedContainer(
+              duration: Duration(milliseconds: 100),
+              width: showNotes ? 100 : 0,
+              margin: EdgeInsets.fromLTRB(4, 24, 4, 4),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: showNotes
+                    ? [
                         Text(
                           "12.08.2025",
                           style: TextStyle(
@@ -282,18 +312,18 @@ class _HabitWidgetState extends State<HabitWidget> {
                           "Keine Notizen verfügbar.",
                           style: TextStyle(fontSize: 10),
                         ),
-                      ],
-                    ),
-                  )
-                : Container(),
+                      ]
+                    : [],
+              ),
+            ),
             Align(
-              alignment: AlignmentGeometry.topCenter,
+              alignment: AlignmentGeometry.center,
               child: Container(
                 height: double.infinity,
                 width: 40,
-                margin: EdgeInsets.fromLTRB(4, 0, 0, 4),
+                margin: EdgeInsets.fromLTRB(4, 24, 0, 4),
                 decoration: BoxDecoration(
-                  color: widget.habit.color,
+                  color: widget.habit.color.withAlpha(180),
                   borderRadius: BorderRadius.circular(4),
                   border: Border.all(
                     color: AppColors.unselectedItem.color().withAlpha(100),

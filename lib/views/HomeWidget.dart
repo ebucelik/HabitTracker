@@ -14,40 +14,72 @@ class HomeWidget extends StatefulWidget {
 }
 
 class _HomeWidgetState extends State<HomeWidget> {
-  late List<DaysInYear> daysInYear = generateDaysInYearList();
+  late List<List<DaysInYear>> daysInYear = generateDaysInYearList();
 
-  List<DaysInYear> generateDaysInYearList() {
+  List<List<DaysInYear>> generateDaysInYearList() {
     int currentYear = DateTime.now().year;
     List<int> months = Iterable<int>.generate(12).toList();
-    List<(int, String)> sumDaysWithMonthNames = months
+    List<(int, String, int)> sumDaysWithMonthNames = months
         .map(
           (month) => (
             DateUtils.getDaysInMonth(currentYear, month + 1),
             getMonthString(month + 1, currentYear),
+            month + 1,
           ),
         )
         .toList();
-    List<List<(int, String)>> listOfSumDays = sumDaysWithMonthNames
+    List<List<(int, String, int)>> listOfSumDays = sumDaysWithMonthNames
         .map(
-          (days) => Iterable<(int, String)>.generate(
+          (days) => Iterable<(int, String, int)>.generate(
             days.$1,
-            (day) => (day, day == 1 ? days.$2 : ""),
+            (day) => (day, day == 1 ? days.$2 : "", days.$3),
           ).toList(),
         )
         .map(
-          (day) =>
-              day.map((singleDay) => (singleDay.$1 + 1, singleDay.$2)).toList(),
+          (day) => day
+              .map(
+                (singleDay) => (singleDay.$1 + 1, singleDay.$2, singleDay.$3),
+              )
+              .toList(),
         )
         .toList();
 
-    List<(int, String)> daysOfEachMonth = List.empty(growable: true);
+    List<(int, String, int)> daysOfEachMonth = List.empty(growable: true);
     for (var dayList in listOfSumDays) {
       daysOfEachMonth.addAll(dayList);
     }
 
-    return daysOfEachMonth
-        .map((day) => DaysInYear(day.$1, day.$2, currentYear))
+    List<DaysInYear> daysInYear = daysOfEachMonth
+        .map((day) => DaysInYear(day.$1, day.$2, day.$3, currentYear))
         .toList();
+
+    List<List<DaysInYear>> daysInYearWithMonthOnTop = List.empty(
+      growable: true,
+    );
+
+    for (var index = 0; index < daysInYear.length; index += 4) {
+      var sublist = daysInYear.sublist(
+        index,
+        index > 360 ? index + (daysInYear.length - index) : index + 4,
+      );
+
+      for (var subelement in sublist) {
+        if (subelement.month.isNotEmpty) {
+          sublist.insert(0, DaysInYear(0, subelement.month, 0, 0));
+          subelement.month = "";
+
+          break;
+        }
+      }
+
+      if (sublist.length <= 4) {
+        sublist.insert(0, DaysInYear(0, "", 0, 0));
+      }
+
+      daysInYearWithMonthOnTop.add(sublist);
+    }
+
+    return daysInYearWithMonthOnTop;
   }
 
   String getMonthString(int month, int year) {

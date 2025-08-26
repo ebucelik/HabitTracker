@@ -60,7 +60,7 @@ class Habit {
       false,
       List.of([
         TimestampWithNote(
-          timestamp: DateTime.timestamp().subtract(const Duration(days: 10)),
+          timestamp: DateTime.timestamp().subtract(const Duration(days: 100)),
           note: "I trained triceps.",
         ),
       ], growable: true),
