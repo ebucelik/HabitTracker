@@ -24,6 +24,10 @@ class Habit {
   );
 
   bool isSelectedTimestampTracked(DateTime selectedTimestamp) {
+    return findTrackedTimestamp(selectedTimestamp) != null;
+  }
+
+  TimestampWithNote? findTrackedTimestamp(DateTime selectedTimestamp) {
     TimestampWithNote? timestampWithNote = timestamps
         .cast<TimestampWithNote?>()
         .firstWhere(
@@ -34,7 +38,7 @@ class Habit {
           orElse: () => null,
         );
 
-    return timestampWithNote != null;
+    return timestampWithNote;
   }
 
   static List<Habit> mock = List.of([

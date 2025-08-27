@@ -20,6 +20,7 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   bool isLaunchedInitially = true;
   int selectedIndex = 0;
+  ThemeMode themeMode = ThemeMode.system;
 
   final List<Widget> tabWidgets = [
     HomeWidget(habits: Habit.mock),
@@ -49,11 +50,27 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: AppColors.background.color(),
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        colorSchemeSeed: AppColors.background.color(),
+      ),
+      darkTheme: ThemeData(
+        scaffoldBackgroundColor: AppColors.background.color(),
+        splashFactory: NoSplash.splashFactory,
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        colorSchemeSeed: AppColors.background.color(),
+      ),
+      themeMode: themeMode,
       home: isLaunchedInitially
           ? LaunchScreenWidget()
           : DefaultTabController(
               length: 3,
               child: Scaffold(
+                extendBody: true,
                 appBar: AppBar(
                   title: Center(
                     child: ClipRRect(
@@ -95,12 +112,6 @@ class _MainAppState extends State<MainApp> {
                 ),
               ),
             ),
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.background.color(),
-        splashFactory: NoSplash.splashFactory,
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-      ),
     );
   }
 }

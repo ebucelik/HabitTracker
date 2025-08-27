@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/DaysInYear.dart';
 import 'package:habit_tracker/models/Habit.dart';
+import 'package:habit_tracker/shared/AppColors.dart';
 import 'package:habit_tracker/views/HabitWidget.dart';
 import 'package:intl/intl.dart';
 
@@ -8,17 +9,20 @@ class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key, required this.habits});
 
   @override
-  State<HomeWidget> createState() => _HomeWidgetState();
+  State<HomeWidget> createState() => HomeWidgetState();
 
   final List<Habit> habits;
 }
 
-class _HomeWidgetState extends State<HomeWidget> {
-  late List<List<DaysInYear>> daysInYear = generateDaysInYearList();
+class HomeWidgetState extends State<HomeWidget> {
+  late List<List<DaysInYear>> daysInYear = generateDaysInYearList(4);
 
-  List<List<DaysInYear>> generateDaysInYearList() {
+  bool isScaled = false;
+
+  List<List<DaysInYear>> generateDaysInYearList(int rows) {
     int currentYear = DateTime.now().year;
     List<int> months = Iterable<int>.generate(12).toList();
+
     List<(int, String, int)> sumDaysWithMonthNames = months
         .map(
           (month) => (
@@ -32,7 +36,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         .map(
           (days) => Iterable<(int, String, int)>.generate(
             days.$1,
-            (day) => (day, day == 1 ? days.$2 : "", days.$3),
+            (day) => (day, day == 0 ? days.$2 : "", days.$3),
           ).toList(),
         )
         .map(
@@ -57,10 +61,10 @@ class _HomeWidgetState extends State<HomeWidget> {
       growable: true,
     );
 
-    for (var index = 0; index < daysInYear.length; index += 4) {
+    for (var index = 0; index < daysInYear.length; index += rows) {
       var sublist = daysInYear.sublist(
         index,
-        index > 360 ? index + (daysInYear.length - index) : index + 4,
+        index > 360 ? index + (daysInYear.length - index) : index + rows,
       );
 
       for (var subelement in sublist) {
@@ -72,7 +76,7 @@ class _HomeWidgetState extends State<HomeWidget> {
         }
       }
 
-      if (sublist.length <= 4) {
+      if (sublist.length <= rows) {
         sublist.insert(0, DaysInYear(0, "", 0, 0));
       }
 
@@ -94,17 +98,52 @@ class _HomeWidgetState extends State<HomeWidget> {
       body: Center(
         child: ListView(
           shrinkWrap: false,
-          children: widget.habits
-              .map(
-                (habit) => Padding(
-                  padding: EdgeInsetsGeometry.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  child: HabitWidget(habit: habit, daysInYear: daysInYear),
+          children:
+              <Widget>[
+                Row(
+                  children: [
+                    Expanded(child: Container()),
+                    Container(
+                      margin: EdgeInsets.only(right: 12),
+                      height: 35,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.color().withAlpha(50),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: AppColors.primary.color()),
+                      ),
+                      child: TextButton(
+                        onPressed: () => setState(() {
+                          isScaled = !isScaled;
+                          daysInYear = generateDaysInYearList(isScaled ? 7 : 4);
+                        }),
+                        child: Icon(
+                          isScaled
+                              ? Icons.zoom_out_map_rounded
+                              : Icons.zoom_in_map_rounded,
+                          size: 18,
+                          color: AppColors.primary.color(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              )
-              .toList(),
+              ] +
+              widget.habits
+                  .map(
+                    (habit) => Padding(
+                      padding: EdgeInsetsGeometry.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      child: HabitWidget(
+                        habit: habit,
+                        daysInYear: daysInYear,
+                        isScaled: isScaled,
+                      ),
+                    ),
+                  )
+                  .toList(),
         ),
       ),
     );

@@ -5,14 +5,22 @@ import 'package:habit_tracker/models/DaysInYear.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
+import 'package:habit_tracker/views/HomeWidget.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
+import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 
 class HabitWidget extends StatefulWidget {
-  const HabitWidget({super.key, required this.habit, required this.daysInYear});
+  HabitWidget({
+    super.key,
+    required this.habit,
+    required this.daysInYear,
+    required this.isScaled,
+  });
 
   final Habit habit;
-  final List<List<DaysInYear>> daysInYear;
+  List<List<DaysInYear>> daysInYear;
+  final bool isScaled;
 
   @override
   State<HabitWidget> createState() => _HabitWidgetState();
@@ -23,23 +31,41 @@ class _HabitWidgetState extends State<HabitWidget> {
   bool isLoopActive = false;
   int counter = 0;
   double widthToReach = 0;
-  double widthIncreaseStep = 150;
   double trackButtonBackgroundWidth = 0;
   double successBackgroundHeight = 0;
   DateTime selectedDate = DateTime.now();
   bool showNotes = false;
+  TimestampWithNote? timestampWithNote;
+  bool didTapOnTrack = false;
+  Timer timer = Timer(Duration.zero, () => {});
+
+  @override
+  void initState() {
+    super.initState();
+
+    DateTime now = DateTime.now();
+    selectedDate = DateTime(now.year, now.month, now.day);
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
 
   void increaseCounterWhileTrackButtonIsPressed() async {
+    trackButtonIsPressed = true;
+
     if (isLoopActive || isSelectedTimestampTracked()) return;
 
     isLoopActive = true;
 
     while (trackButtonIsPressed) {
-      await Future.delayed(Duration(milliseconds: 1000));
-
-      setState(() {
-        trackButtonBackgroundWidth += widthIncreaseStep;
-      });
+      if (mounted) {
+        setState(() {
+          trackButtonBackgroundWidth += widthToReach + 1;
+        });
+      }
 
       final canVibrate = await Haptics.canVibrate();
 
@@ -47,21 +73,24 @@ class _HabitWidgetState extends State<HabitWidget> {
         await Haptics.vibrate(HapticsType.success);
       }
 
+      await Future.delayed(Duration(milliseconds: 800));
+
       if (trackButtonBackgroundWidth >= widthToReach) {
-        isLoopActive = false;
-        trackButtonIsPressed = false;
-        counter = 0;
-        successBackgroundHeight = 300;
+        if (mounted) {
+          setState(() {
+            isLoopActive = false;
+            trackButtonIsPressed = false;
+            counter = 0;
+            successBackgroundHeight = widget.isScaled ? 240 : 300;
+            widget.habit.timestamps.add(
+              TimestampWithNote(timestamp: selectedDate),
+            );
+          });
+        }
 
         if (canVibrate) {
           await Haptics.vibrate(HapticsType.warning);
         }
-
-        setState(() {
-          widget.habit.timestamps.add(
-            TimestampWithNote(timestamp: selectedDate),
-          );
-        });
       }
     }
 
@@ -78,14 +107,27 @@ class _HabitWidgetState extends State<HabitWidget> {
     }
   }
 
-  void resetTrackButtonBackgroundWidth() async {
-    await Future.delayed(Duration(milliseconds: 1000));
-
+  void resetTrackButton() async {
     if (mounted) {
       setState(() {
+        trackButtonIsPressed = false;
+        counter = 0;
         trackButtonBackgroundWidth = 0;
+        didTapOnTrack = false;
+      });
+
+      timer.cancel();
+    }
+  }
+
+  void setDidTapOnTrack() {
+    if (mounted) {
+      setState(() {
+        didTapOnTrack = true;
       });
     }
+
+    timer = Timer(Duration(milliseconds: 3000), () => resetTrackButton());
   }
 
   bool isSelectedTimestampTracked() {
@@ -113,6 +155,27 @@ class _HabitWidgetState extends State<HabitWidget> {
     }
   }
 
+  String getSelectedDate() {
+    DateFormat formatDay = DateFormat("dd");
+    DateFormat formatMonth = DateFormat("MM");
+
+    return "${formatDay.format(selectedDate)}.${formatMonth.format(selectedDate)}.${selectedDate.year}";
+  }
+
+  String defaultNote = "Keine Notizen verfügbar.";
+
+  String getTimestampNote(TimestampWithNote? timestampWithNote) {
+    if (timestampWithNote != null) {
+      if (timestampWithNote.note != null) {
+        return timestampWithNote.note == ""
+            ? defaultNote
+            : timestampWithNote.note ?? defaultNote;
+      }
+    }
+
+    return defaultNote;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -120,13 +183,8 @@ class _HabitWidgetState extends State<HabitWidget> {
       children: [
         Container(
           width: double.infinity,
-          height: 300,
+          height: widget.isScaled ? 240 : 300,
           margin: EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            color: AppColors.primary.color(),
-            border: Border.all(color: AppColors.primary.color()),
-            borderRadius: BorderRadius.circular(10),
-          ),
           child: Column(
             children: [headerWidget(), bodyWidget(), footerWidget()],
           ),
@@ -170,26 +228,11 @@ class _HabitWidgetState extends State<HabitWidget> {
 
   Widget headerWidget() {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.primary.color(),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(10),
-          topRight: Radius.circular(10),
-        ),
-      ),
-      padding: EdgeInsets.fromLTRB(8, 4, 8, 4),
+      padding: EdgeInsets.fromLTRB(8, 0, 8, 4),
       child: Row(
         spacing: 8,
         children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: AppColors.primary.color().withAlpha(150),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(widget.habit.iconData, color: widget.habit.color),
-          ),
+          Icon(widget.habit.iconData, color: widget.habit.color, size: 35),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -197,7 +240,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                 Text(
                   widget.habit.name,
                   style: TextStyle(
-                    color: AppColors.background.color(),
+                    color: AppColors.primary.color(),
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
                   ),
@@ -205,7 +248,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                 Text(
                   widget.habit.description,
                   style: TextStyle(
-                    color: AppColors.background.color(),
+                    color: AppColors.primary.color(),
                     fontWeight: FontWeight.normal,
                     fontSize: 12,
                   ),
@@ -219,7 +262,7 @@ class _HabitWidgetState extends State<HabitWidget> {
             child: Text(
               widget.habit.streak.toString(),
               style: TextStyle(
-                color: AppColors.background.color(),
+                color: AppColors.primary.color(),
                 fontWeight: FontWeight.w700,
                 fontSize: 30,
               ),
@@ -233,115 +276,118 @@ class _HabitWidgetState extends State<HabitWidget> {
   Widget bodyWidget() {
     return Expanded(
       child: Container(
-        padding: EdgeInsets.fromLTRB(8, 0, 8, 4),
-        decoration: BoxDecoration(color: AppColors.primary.color()),
+        decoration: BoxDecoration(
+          color: AppColors.primary.color(),
+          border: Border.all(color: AppColors.primary.color()),
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(10),
+            topRight: Radius.circular(10),
+          ),
+        ),
         child: Row(
           children: [
             Expanded(
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                children: widget.daysInYear
-                    .map(
-                      (calendar) => Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: calendar
-                            .map(
-                              (daysInYear) => daysInYear.days == 0
-                                  ? SizedBox(
-                                      height: 20,
-                                      child: Text(
-                                        daysInYear.month.isEmpty
-                                            ? ""
-                                            : daysInYear.month.substring(0, 3),
-                                        textAlign: TextAlign.start,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 12,
-                                          color: AppColors.background.color(),
-                                        ),
-                                      ),
-                                    )
-                                  : Flexible(
-                                      child: Container(
-                                        height: 40,
-                                        width: 40,
-                                        margin: EdgeInsets.all(3),
-                                        decoration: BoxDecoration(
-                                          color: widget.habit.color.withAlpha(
-                                            widget.habit.isSelectedTimestampTracked(
-                                                      DateTime(
-                                                        daysInYear.year,
-                                                        daysInYear.monthNum,
-                                                        daysInYear.days,
-                                                      ),
-                                                    ) ==
-                                                    true
-                                                ? 255
-                                                : 40,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                            )
-                            .toList(),
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.color(),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                        topRight: Radius.circular(10),
                       ),
-                    )
-                    .toList(),
-              ),
-            ),
-            AnimatedContainer(
-              duration: Duration(milliseconds: 100),
-              width: showNotes ? 100 : 0,
-              margin: EdgeInsets.fromLTRB(4, 24, 4, 4),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: showNotes
-                    ? [
-                        Text(
-                          "12.08.2025",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
+                    ),
+                    padding: EdgeInsets.only(
+                      left: 8,
+                      top: 2,
+                      right: 42,
+                      bottom: 2,
+                    ),
+                    child: habitListView(),
+                  ),
+                  Row(
+                    children: [
+                      Expanded(child: Container()),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.color().withAlpha(150),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(10),
+                            topRight: Radius.circular(10),
                           ),
                         ),
-                        Text(
-                          "Keine Notizen verfügbar.",
-                          style: TextStyle(fontSize: 10),
+                        child: Row(
+                          children: [
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: 200),
+                              width: showNotes ? 100 : 0,
+                              margin: showNotes
+                                  ? EdgeInsets.fromLTRB(4, 24, 4, 4)
+                                  : null,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: showNotes
+                                    ? [
+                                        Text(
+                                          getSelectedDate(),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+
+                                        Text(
+                                          getTimestampNote(timestampWithNote),
+                                          style: TextStyle(fontSize: 10),
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    width: 40,
+                                    margin: EdgeInsets.fromLTRB(
+                                      0,
+                                      widget.isScaled ? 17 : 24,
+                                      0,
+                                      4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: widget.habit.color.withAlpha(180),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: AppColors.unselectedItem
+                                            .color()
+                                            .withAlpha(100),
+                                      ),
+                                    ),
+                                    child: IconButton(
+                                      color: AppColors.primary.color(),
+                                      onPressed: () => {
+                                        setState(() {
+                                          showNotes = !showNotes;
+                                        }),
+                                      },
+                                      icon: Icon(
+                                        showNotes
+                                            ? Icons.arrow_forward_rounded
+                                            : Icons.arrow_back_rounded,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ]
-                    : [],
-              ),
-            ),
-            Align(
-              alignment: AlignmentGeometry.center,
-              child: Container(
-                height: double.infinity,
-                width: 40,
-                margin: EdgeInsets.fromLTRB(4, 24, 0, 4),
-                decoration: BoxDecoration(
-                  color: widget.habit.color.withAlpha(180),
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: AppColors.unselectedItem.color().withAlpha(100),
+                      ),
+                    ],
                   ),
-                ),
-                child: IconButton(
-                  color: AppColors.primary.color(),
-                  onPressed: () => {
-                    setState(() {
-                      showNotes = !showNotes;
-                    }),
-                  },
-                  icon: Icon(
-                    showNotes
-                        ? Icons.arrow_forward_rounded
-                        : Icons.arrow_back_rounded,
-                  ),
-                ),
+                ],
               ),
             ),
           ],
@@ -350,28 +396,143 @@ class _HabitWidgetState extends State<HabitWidget> {
     );
   }
 
+  Widget habitListView() {
+    return ListView(
+      scrollDirection: Axis.horizontal,
+      children: widget.daysInYear
+          .map(
+            (calendar) => Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: calendar
+                  .map(
+                    (daysInYear) => daysInYear.days == 0
+                        ? SizedBox(
+                            height: widget.isScaled ? 15 : 20,
+                            child: Text(
+                              daysInYear.month.isEmpty
+                                  ? ""
+                                  : daysInYear.month.substring(0, 3),
+                              textAlign: TextAlign.start,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w700,
+                                fontSize: widget.isScaled ? 6 : 12,
+                                color: AppColors.background.color(),
+                              ),
+                            ),
+                          )
+                        : Flexible(
+                            flex: widget.isScaled ? 0 : 1,
+                            child: InkWell(
+                              onTap: () => {
+                                setState(() {
+                                  selectedDate = DateTime(
+                                    daysInYear.year,
+                                    daysInYear.monthNum,
+                                    daysInYear.days,
+                                  );
+                                  timestampWithNote = widget.habit
+                                      .findTrackedTimestamp(selectedDate);
+                                }),
+                              },
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    height: widget.isScaled ? 15 : 40,
+                                    width: widget.isScaled ? 15 : 40,
+                                    margin: EdgeInsets.all(
+                                      widget.isScaled ? 1 : 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: widget.habit.color.withAlpha(
+                                        widget.habit.isSelectedTimestampTracked(
+                                              DateTime(
+                                                daysInYear.year,
+                                                daysInYear.monthNum,
+                                                daysInYear.days,
+                                              ),
+                                            )
+                                            ? 255
+                                            : 40,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border:
+                                          DateTime(
+                                                daysInYear.year,
+                                                daysInYear.monthNum,
+                                                daysInYear.days,
+                                              ) ==
+                                              selectedDate
+                                          ? Border.all(
+                                              width: 2,
+                                              color: AppColors.background
+                                                  .color(),
+                                            )
+                                          : null,
+                                    ),
+                                  ),
+                                  widget.habit.isSelectedTimestampTracked(
+                                        DateTime(
+                                          daysInYear.year,
+                                          daysInYear.monthNum,
+                                          daysInYear.days,
+                                        ),
+                                      )
+                                      ? getTimestampNote(
+                                                  widget.habit
+                                                      .findTrackedTimestamp(
+                                                        DateTime(
+                                                          daysInYear.year,
+                                                          daysInYear.monthNum,
+                                                          daysInYear.days,
+                                                        ),
+                                                      ),
+                                                ) !=
+                                                defaultNote
+                                            ? Positioned(
+                                                top: 0.5,
+                                                right: 3,
+                                                child: Icon(
+                                                  size: widget.isScaled
+                                                      ? 8
+                                                      : 18,
+                                                  Icons.bookmark,
+                                                  color: AppColors.background
+                                                      .color(),
+                                                ),
+                                              )
+                                            : Container()
+                                      : Container(),
+                                ],
+                              ),
+                            ),
+                          ),
+                  )
+                  .toList(),
+            ),
+          )
+          .toList(),
+    );
+  }
+
   Widget footerWidget() {
     return Listener(
-      onPointerDown: (_) => {
-        trackButtonIsPressed = true,
-        increaseCounterWhileTrackButtonIsPressed(),
-      },
-      onPointerUp: (_) => {
-        trackButtonIsPressed = false,
-        counter = 0,
-        resetTrackButtonBackgroundWidth(),
-      },
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          widthToReach = constraints.widthConstraints().maxWidth;
+      onPointerUp: (_) => resetTrackButton(),
+      onPointerCancel: (_) => resetTrackButton(),
+      child: InkWell(
+        onTap: () => setDidTapOnTrack(),
+        onLongPress: () => increaseCounterWhileTrackButtonIsPressed(),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            widthToReach = constraints.widthConstraints().maxWidth;
 
-          return isSelectedTimestampTracked()
-              ? GestureDetector(
-                  child: trackButtonWidget(),
-                  onTap: () => {onTrackButtonPressed()},
-                )
-              : trackButtonWidget();
-        },
+            return isSelectedTimestampTracked()
+                ? GestureDetector(
+                    child: trackButtonWidget(),
+                    onTap: () => {onTrackButtonPressed()},
+                  )
+                : trackButtonWidget();
+          },
+        ),
       ),
     );
   }
@@ -382,7 +543,7 @@ class _HabitWidgetState extends State<HabitWidget> {
       child: Stack(
         children: [
           AnimatedContainer(
-            duration: Duration(seconds: 1),
+            duration: Duration(milliseconds: 800),
             alignment: AlignmentGeometry.center,
             height: double.infinity,
             width: isSelectedTimestampTracked()
@@ -401,13 +562,12 @@ class _HabitWidgetState extends State<HabitWidget> {
             height: double.infinity,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: trackButtonIsPressed
-                  ? Colors.grey.withAlpha(30)
-                  : widget.habit.color.withAlpha(150),
+              color: widget.habit.color.withAlpha(150),
               borderRadius: BorderRadius.only(
                 bottomLeft: Radius.circular(9),
                 bottomRight: Radius.circular(9),
               ),
+              border: Border.all(color: AppColors.primary.color(), width: 2),
             ),
             child: isSelectedTimestampTracked()
                 ? Center(
@@ -417,12 +577,25 @@ class _HabitWidgetState extends State<HabitWidget> {
                       color: AppColors.primary.color(),
                     ),
                   )
-                : Center(
-                    child: Icon(
-                      Icons.check,
-                      size: 30,
-                      color: AppColors.primary.color(),
-                    ),
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.check,
+                        size: didTapOnTrack ? 20 : 30,
+                        color: AppColors.primary.color(),
+                      ),
+                      didTapOnTrack
+                          ? Text(
+                              "Hold to track",
+                              style: TextStyle(
+                                color: AppColors.primary.color(),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : Container(),
+                    ],
                   ),
           ),
         ],
