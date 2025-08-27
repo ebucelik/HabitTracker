@@ -23,6 +23,12 @@ class HomeWidgetState extends State<HomeWidget> {
     int currentYear = DateTime.now().year;
     List<int> months = Iterable<int>.generate(12).toList();
 
+    months =
+        months.sublist(DateTime.now().month - 1, months.length) +
+        months.sublist(0, DateTime.now().month - 1);
+
+    // months = months.reversed.toList();
+
     List<(int, String, int)> sumDaysWithMonthNames = months
         .map(
           (month) => (
@@ -37,7 +43,7 @@ class HomeWidgetState extends State<HomeWidget> {
           (days) => Iterable<(int, String, int)>.generate(
             days.$1,
             (day) => (day, day == 0 ? days.$2 : "", days.$3),
-          ).toList(),
+          ).toList().reversed.toList(),
         )
         .map(
           (day) => day

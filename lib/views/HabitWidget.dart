@@ -5,7 +5,6 @@ import 'package:habit_tracker/models/DaysInYear.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
-import 'package:habit_tracker/views/HomeWidget.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
@@ -277,7 +276,7 @@ class _HabitWidgetState extends State<HabitWidget> {
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.primary.color(),
+          color: AppColors.primaryDark.color(),
           border: Border.all(color: AppColors.primary.color()),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(10),
@@ -291,7 +290,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.primary.color(),
+                      color: AppColors.primaryDark.color(),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(10),
                         topRight: Radius.circular(10),
@@ -300,7 +299,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                     padding: EdgeInsets.only(
                       left: 8,
                       top: 2,
-                      right: 42,
+                      right: showNotes ? 160 : 50,
                       bottom: 2,
                     ),
                     child: habitListView(),
@@ -310,7 +309,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                       Expanded(child: Container()),
                       Container(
                         decoration: BoxDecoration(
-                          color: AppColors.primary.color().withAlpha(150),
+                          color: AppColors.primaryDark.color().withAlpha(150),
                           borderRadius: BorderRadius.only(
                             topLeft: Radius.circular(10),
                             topRight: Radius.circular(10),
@@ -334,12 +333,16 @@ class _HabitWidgetState extends State<HabitWidget> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
+                                            color: AppColors.primary.color(),
                                           ),
                                         ),
 
                                         Text(
                                           getTimestampNote(timestampWithNote),
-                                          style: TextStyle(fontSize: 10),
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            color: AppColors.primary.color(),
+                                          ),
                                         ),
                                       ]
                                     : [],
@@ -352,8 +355,8 @@ class _HabitWidgetState extends State<HabitWidget> {
                                     width: 40,
                                     margin: EdgeInsets.fromLTRB(
                                       0,
-                                      widget.isScaled ? 17 : 24,
-                                      0,
+                                      widget.isScaled ? 17 : 25,
+                                      8,
                                       4,
                                     ),
                                     decoration: BoxDecoration(
@@ -398,6 +401,7 @@ class _HabitWidgetState extends State<HabitWidget> {
 
   Widget habitListView() {
     return ListView(
+      reverse: true,
       scrollDirection: Axis.horizontal,
       children: widget.daysInYear
           .map(
@@ -416,101 +420,94 @@ class _HabitWidgetState extends State<HabitWidget> {
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: widget.isScaled ? 6 : 12,
-                                color: AppColors.background.color(),
+                                color: AppColors.primary.color(),
                               ),
                             ),
                           )
-                        : Flexible(
-                            flex: widget.isScaled ? 0 : 1,
-                            child: InkWell(
-                              onTap: () => {
-                                setState(() {
-                                  selectedDate = DateTime(
-                                    daysInYear.year,
-                                    daysInYear.monthNum,
-                                    daysInYear.days,
-                                  );
-                                  timestampWithNote = widget.habit
-                                      .findTrackedTimestamp(selectedDate);
-                                }),
-                              },
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    height: widget.isScaled ? 15 : 40,
-                                    width: widget.isScaled ? 15 : 40,
-                                    margin: EdgeInsets.all(
-                                      widget.isScaled ? 1 : 3,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: widget.habit.color.withAlpha(
-                                        widget.habit.isSelectedTimestampTracked(
-                                              DateTime(
-                                                daysInYear.year,
-                                                daysInYear.monthNum,
-                                                daysInYear.days,
-                                              ),
-                                            )
-                                            ? 255
-                                            : 40,
-                                      ),
-                                      borderRadius: BorderRadius.circular(4),
-                                      border:
-                                          DateTime(
-                                                daysInYear.year,
-                                                daysInYear.monthNum,
-                                                daysInYear.days,
-                                              ) ==
-                                              selectedDate
-                                          ? Border.all(
-                                              width: 2,
-                                              color: AppColors.background
-                                                  .color(),
-                                            )
-                                          : null,
-                                    ),
-                                  ),
-                                  widget.habit.isSelectedTimestampTracked(
-                                        DateTime(
-                                          daysInYear.year,
-                                          daysInYear.monthNum,
-                                          daysInYear.days,
-                                        ),
-                                      )
-                                      ? getTimestampNote(
-                                                  widget.habit
-                                                      .findTrackedTimestamp(
-                                                        DateTime(
-                                                          daysInYear.year,
-                                                          daysInYear.monthNum,
-                                                          daysInYear.days,
-                                                        ),
-                                                      ),
-                                                ) !=
-                                                defaultNote
-                                            ? Positioned(
-                                                top: 0.5,
-                                                right: 3,
-                                                child: Icon(
-                                                  size: widget.isScaled
-                                                      ? 8
-                                                      : 18,
-                                                  Icons.bookmark,
-                                                  color: AppColors.background
-                                                      .color(),
-                                                ),
-                                              )
-                                            : Container()
-                                      : Container(),
-                                ],
-                              ),
-                            ),
-                          ),
+                        : habitButton(daysInYear),
                   )
                   .toList(),
             ),
           )
           .toList(),
+    );
+  }
+
+  Widget habitButton(DaysInYear daysInYear) {
+    return Flexible(
+      flex: widget.isScaled ? 0 : 1,
+      child: InkWell(
+        onTap: () => {
+          setState(() {
+            selectedDate = DateTime(
+              daysInYear.year,
+              daysInYear.monthNum,
+              daysInYear.days,
+            );
+            timestampWithNote = widget.habit.findTrackedTimestamp(selectedDate);
+          }),
+        },
+        child: Stack(
+          children: [
+            Container(
+              height: widget.isScaled ? 15 : 40,
+              width: widget.isScaled ? 15 : 40,
+              margin: EdgeInsets.all(widget.isScaled ? 1 : 3),
+              decoration: BoxDecoration(
+                color: widget.habit.color.withAlpha(
+                  widget.habit.isSelectedTimestampTracked(
+                        DateTime(
+                          daysInYear.year,
+                          daysInYear.monthNum,
+                          daysInYear.days,
+                        ),
+                      )
+                      ? 255
+                      : 40,
+                ),
+                borderRadius: BorderRadius.circular(4),
+                border:
+                    DateTime(
+                          daysInYear.year,
+                          daysInYear.monthNum,
+                          daysInYear.days,
+                        ) ==
+                        selectedDate
+                    ? Border.all(width: 2, color: AppColors.primary.color())
+                    : null,
+              ),
+            ),
+            widget.habit.isSelectedTimestampTracked(
+                  DateTime(
+                    daysInYear.year,
+                    daysInYear.monthNum,
+                    daysInYear.days,
+                  ),
+                )
+                ? getTimestampNote(
+                            widget.habit.findTrackedTimestamp(
+                              DateTime(
+                                daysInYear.year,
+                                daysInYear.monthNum,
+                                daysInYear.days,
+                              ),
+                            ),
+                          ) !=
+                          defaultNote
+                      ? Positioned(
+                          top: 0.5,
+                          right: 3,
+                          child: Icon(
+                            size: widget.isScaled ? 8 : 18,
+                            Icons.bookmark,
+                            color: AppColors.background.color(),
+                          ),
+                        )
+                      : Container()
+                : Container(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -567,7 +564,12 @@ class _HabitWidgetState extends State<HabitWidget> {
                 bottomLeft: Radius.circular(9),
                 bottomRight: Radius.circular(9),
               ),
-              border: Border.all(color: AppColors.primary.color(), width: 2),
+              border: Border(
+                top: BorderSide(width: 1, color: AppColors.primary.color()),
+                left: BorderSide(width: 2, color: AppColors.primary.color()),
+                right: BorderSide(width: 2, color: AppColors.primary.color()),
+                bottom: BorderSide(width: 2, color: AppColors.primary.color()),
+              ),
             ),
             child: isSelectedTimestampTracked()
                 ? Center(
