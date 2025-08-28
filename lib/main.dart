@@ -3,11 +3,19 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
+import 'package:habit_tracker/themes/light_mode.dart';
+import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/LaunchScreenWidget.dart';
 import 'package:habit_tracker/views/HomeWidget.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => ThemeProvider(),
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatefulWidget {
@@ -20,7 +28,6 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   bool isLaunchedInitially = true;
   int selectedIndex = 0;
-  ThemeMode themeMode = ThemeMode.system;
 
   final List<Widget> tabWidgets = [
     HomeWidget(habits: Habit.mock),
@@ -50,21 +57,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.background.color(),
-        splashFactory: NoSplash.splashFactory,
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        colorSchemeSeed: AppColors.background.color(),
-      ),
-      darkTheme: ThemeData(
-        scaffoldBackgroundColor: AppColors.background.color(),
-        splashFactory: NoSplash.splashFactory,
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        colorSchemeSeed: AppColors.background.color(),
-      ),
-      themeMode: themeMode,
+      theme: Provider.of<ThemeProvider>(context).themeData,
       home: isLaunchedInitially
           ? LaunchScreenWidget()
           : DefaultTabController(
@@ -82,16 +75,12 @@ class _MainAppState extends State<MainApp> {
                       ),
                     ),
                   ),
-                  backgroundColor: AppColors.background.color(),
                 ),
-                backgroundColor: AppColors.background.color(),
                 body: tabWidgets.elementAt(selectedIndex),
                 bottomNavigationBar: BottomNavigationBar(
-                  backgroundColor: AppColors.background.color(),
                   showSelectedLabels: false,
                   showUnselectedLabels: false,
                   type: BottomNavigationBarType.fixed,
-                  selectedItemColor: AppColors.primary.color(),
                   unselectedItemColor: AppColors.unselectedItem.color(),
                   items: [
                     BottomNavigationBarItem(

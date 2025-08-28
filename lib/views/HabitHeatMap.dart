@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import 'package:habit_tracker/models/Habit.dart';
-import 'package:habit_tracker/shared/AppColors.dart';
 
 class HabitHeatMap extends StatefulWidget {
   const HabitHeatMap({
@@ -25,10 +24,12 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
   @override
   Widget build(BuildContext context) {
     return HeatMap(
-      colorsets: {1: widget.habit.color, 2: AppColors.primary.color()},
+      colorsets: {
+        1: widget.habit.color,
+        2: Theme.of(context).colorScheme.secondary,
+      },
       colorMode: ColorMode.color,
       fontSize: widget.isScaled ? 10 : 6,
-      textColor: AppColors.primary.color(),
       defaultColor: widget.habit.color.withAlpha(50),
       datasets: {
         for (var timestamp in widget.habit.timestamps)
@@ -53,6 +54,5 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
         widget.onDateTimeSelected(dateTime);
       }),
     );
-    ;
   }
 }

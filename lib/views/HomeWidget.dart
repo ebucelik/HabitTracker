@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/Habit.dart';
-import 'package:habit_tracker/shared/AppColors.dart';
+import 'package:habit_tracker/themes/dark_mode.dart';
+import 'package:habit_tracker/themes/light_mode.dart';
+import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/HabitWidget.dart';
+import 'package:provider/provider.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key, required this.habits});
@@ -31,9 +34,37 @@ class HomeWidgetState extends State<HomeWidget> {
                       height: 35,
                       width: 70,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.color().withAlpha(50),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withAlpha(15),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: AppColors.primary.color()),
+                        border: Border.all(),
+                      ),
+                      child: TextButton(
+                        onPressed: () => setState(() {
+                          Provider.of<ThemeProvider>(
+                            context,
+                            listen: false,
+                          ).toggleTheme();
+                        }),
+                        child: Icon(
+                          Theme.of(context) == darkMode
+                              ? Icons.light_mode_rounded
+                              : Icons.dark_mode_rounded,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(right: 12),
+                      height: 35,
+                      width: 70,
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.primary.withAlpha(15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(),
                       ),
                       child: TextButton(
                         onPressed: () => setState(() {
@@ -41,10 +72,9 @@ class HomeWidgetState extends State<HomeWidget> {
                         }),
                         child: Icon(
                           isScaled
-                              ? Icons.zoom_out_map_rounded
-                              : Icons.zoom_in_map_rounded,
+                              ? Icons.zoom_in_map_rounded
+                              : Icons.zoom_out_map_rounded,
                           size: 18,
-                          color: AppColors.primary.color(),
                         ),
                       ),
                     ),
@@ -56,7 +86,7 @@ class HomeWidgetState extends State<HomeWidget> {
                     (habit) => Padding(
                       padding: EdgeInsetsGeometry.symmetric(
                         horizontal: 8,
-                        vertical: 4,
+                        vertical: 16,
                       ),
                       child: HabitWidget(habit: habit, isScaled: isScaled),
                     ),

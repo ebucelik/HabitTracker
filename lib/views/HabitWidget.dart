@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
+import 'package:habit_tracker/themes/light_mode.dart';
 import 'package:habit_tracker/views/HabitHeatMap.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:intl/intl.dart';
@@ -31,6 +32,7 @@ class _HabitWidgetState extends State<HabitWidget> {
   TimestampWithNote? timestampWithNote;
   bool didTapOnTrack = false;
   Timer timer = Timer(Duration.zero, () => {});
+  ColorScheme colorScheme = lightMode.colorScheme;
 
   @override
   void initState() {
@@ -75,7 +77,7 @@ class _HabitWidgetState extends State<HabitWidget> {
             isLoopActive = false;
             trackButtonIsPressed = false;
             counter = 0;
-            successBackgroundHeight = widget.isScaled ? 375 : 220;
+            successBackgroundHeight = widget.isScaled ? 378 : 220;
             widget.habit.timestamps.add(
               TimestampWithNote(timestamp: selectedDate),
             );
@@ -178,13 +180,15 @@ class _HabitWidgetState extends State<HabitWidget> {
 
   @override
   Widget build(BuildContext context) {
+    colorScheme = Theme.of(context).colorScheme;
+
     return Stack(
       alignment: AlignmentGeometry.bottomCenter,
       children: [
         AnimatedContainer(
           duration: Duration(milliseconds: widget.isScaled ? 0 : 300),
           width: double.infinity,
-          height: widget.isScaled ? 375 : 220,
+          height: widget.isScaled ? 378 : 220,
           child: Column(
             children: [headerWidget(), bodyWidget(), footerWidget()],
           ),
@@ -195,9 +199,11 @@ class _HabitWidgetState extends State<HabitWidget> {
           height: successBackgroundHeight,
           padding: EdgeInsets.only(top: 8),
           decoration: BoxDecoration(
-            color: widget.habit.color,
-            border: Border.all(color: AppColors.primary.color()),
-            borderRadius: BorderRadius.circular(10),
+            color: successBackgroundHeight > 0
+                ? widget.habit.color
+                : Colors.transparent,
+            border: Border.all(width: 2, color: colorScheme.primary),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Center(
             child: Stack(
@@ -238,19 +244,11 @@ class _HabitWidgetState extends State<HabitWidget> {
               children: [
                 Text(
                   widget.habit.name,
-                  style: TextStyle(
-                    color: AppColors.primary.color(),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
                 ),
                 Text(
                   widget.habit.description,
-                  style: TextStyle(
-                    color: AppColors.primary.color(),
-                    fontWeight: FontWeight.normal,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
                 ),
               ],
             ),
@@ -260,11 +258,7 @@ class _HabitWidgetState extends State<HabitWidget> {
             margin: EdgeInsets.only(right: 8),
             child: Text(
               widget.habit.streak.toString(),
-              style: TextStyle(
-                color: AppColors.primary.color(),
-                fontWeight: FontWeight.w700,
-                fontSize: 30,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30),
             ),
           ),
         ],
@@ -276,8 +270,7 @@ class _HabitWidgetState extends State<HabitWidget> {
     return Expanded(
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.primaryDark.color(),
-          border: Border.all(color: AppColors.primary.color()),
+          border: Border.all(width: 2, color: colorScheme.primary),
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(10),
             topRight: Radius.circular(10),
@@ -290,7 +283,6 @@ class _HabitWidgetState extends State<HabitWidget> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      color: AppColors.primaryDark.color(),
                       borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(10),
                         topRight: Radius.circular(10),
@@ -306,6 +298,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                       habit: widget.habit,
                       isScaled: widget.isScaled,
                       onDateTimeSelected: (selectedDateTime) => setState(() {
+                        showNotes = false;
                         selectedDate = selectedDateTime;
                       }),
                     ),
@@ -315,10 +308,10 @@ class _HabitWidgetState extends State<HabitWidget> {
                       Expanded(child: Container()),
                       Container(
                         decoration: BoxDecoration(
-                          color: AppColors.primaryDark.color().withAlpha(150),
+                          color: colorScheme.primary.withAlpha(150),
                           borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(10),
-                            topRight: Radius.circular(10),
+                            topLeft: Radius.circular(8),
+                            topRight: Radius.circular(8),
                           ),
                         ),
                         child: Row(
@@ -344,7 +337,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 14,
-                                            color: AppColors.primary.color(),
+                                            color: colorScheme.surface,
                                           ),
                                         ),
 
@@ -352,7 +345,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                                           getTimestampNote(timestampWithNote),
                                           style: TextStyle(
                                             fontSize: 10,
-                                            color: AppColors.primary.color(),
+                                            color: colorScheme.surface,
                                           ),
                                         ),
                                       ]
@@ -426,10 +419,9 @@ class _HabitWidgetState extends State<HabitWidget> {
                 bottomRight: Radius.circular(9),
               ),
               border: Border(
-                top: BorderSide(width: 1, color: AppColors.primary.color()),
-                left: BorderSide(width: 2, color: AppColors.primary.color()),
-                right: BorderSide(width: 2, color: AppColors.primary.color()),
-                bottom: BorderSide(width: 2, color: AppColors.primary.color()),
+                left: BorderSide(width: 2, color: colorScheme.primary),
+                right: BorderSide(width: 2, color: colorScheme.primary),
+                bottom: BorderSide(width: 2, color: colorScheme.primary),
               ),
             ),
             child: Row(
@@ -443,32 +435,23 @@ class _HabitWidgetState extends State<HabitWidget> {
                             border: Border(
                               right: BorderSide(
                                 width: 1,
-                                color: AppColors.primary.color(),
+                                color: colorScheme.primary,
                               ),
                             ),
                           )
                         : null,
                     child: isSelectedTimestampTracked()
                         ? Center(
-                            child: Icon(
-                              Icons.check_circle_outline,
-                              size: 30,
-                              color: AppColors.primary.color(),
-                            ),
+                            child: Icon(Icons.check_circle_outline, size: 30),
                           )
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                Icons.check,
-                                size: didTapOnTrack ? 20 : 30,
-                                color: AppColors.primary.color(),
-                              ),
+                              Icon(Icons.check, size: didTapOnTrack ? 20 : 30),
                               didTapOnTrack
                                   ? Text(
                                       "Hold to track",
                                       style: TextStyle(
-                                        color: AppColors.primary.color(),
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -480,13 +463,13 @@ class _HabitWidgetState extends State<HabitWidget> {
                 ),
                 isSelectedTimestampTracked() && isTimestampNoteAvailable()
                     ? Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8),
+                        padding: EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
-                          color: AppColors.unselectedItem.color(),
+                          color: colorScheme.surface,
                           border: Border(
                             left: BorderSide(
                               width: isSelectedTimestampTracked() ? 1 : 0,
-                              color: AppColors.primary.color(),
+                              color: colorScheme.primary,
                             ),
                           ),
                           borderRadius: BorderRadius.only(
@@ -499,7 +482,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                             icon: Icon(
                               Icons.info_rounded,
                               size: 30,
-                              color: AppColors.primary.color(),
+                              color: colorScheme.secondary,
                             ),
                           ),
                         ),

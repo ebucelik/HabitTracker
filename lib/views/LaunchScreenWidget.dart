@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/shared/AppColors.dart';
 import 'package:lottie/lottie.dart';
 
 class LaunchScreenWidget extends StatelessWidget {
@@ -19,7 +18,6 @@ class LaunchScreenWidget extends StatelessWidget {
           ),
         ),
       ),
-      backgroundColor: AppColors.background.color(),
     );
   }
 }
