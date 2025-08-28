@@ -51,7 +51,7 @@ class Habit {
       HabitCategory.work,
       false,
       List.of([
-        TimestampWithNote(timestamp: DateTime.timestamp()),
+        TimestampWithNote(timestamp: DateTime.now(), note: "Ebu"),
       ], growable: true),
     ),
     Habit(
@@ -64,7 +64,7 @@ class Habit {
       false,
       List.of([
         TimestampWithNote(
-          timestamp: DateTime.timestamp().subtract(const Duration(days: 100)),
+          timestamp: DateTime.now().subtract(Duration(days: 100)),
           note: "I trained triceps.",
         ),
       ], growable: true),
@@ -79,7 +79,7 @@ class Habit {
       false,
       List.of([
         TimestampWithNote(
-          timestamp: DateTime.timestamp().subtract(const Duration(days: 2)),
+          timestamp: DateTime.now().subtract(Duration(days: 10)),
           note: "Only protein caffe latte.",
         ),
       ]),
