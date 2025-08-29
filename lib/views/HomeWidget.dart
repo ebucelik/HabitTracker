@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/themes/dark_mode.dart';
-import 'package:habit_tracker/themes/light_mode.dart';
 import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/HabitWidget.dart';
 import 'package:provider/provider.dart';
@@ -30,7 +29,7 @@ class HomeWidgetState extends State<HomeWidget> {
                   children: [
                     Expanded(child: Container()),
                     Container(
-                      margin: EdgeInsets.only(right: 12),
+                      margin: EdgeInsets.only(right: 6),
                       height: 35,
                       width: 70,
                       decoration: BoxDecoration(

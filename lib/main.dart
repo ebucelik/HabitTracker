@@ -81,7 +81,7 @@ class _MainAppState extends State<MainApp> {
                   showSelectedLabels: false,
                   showUnselectedLabels: false,
                   type: BottomNavigationBarType.fixed,
-                  unselectedItemColor: AppColors.unselectedItem.color(),
+                  unselectedItemColor: AppColors.secondary.color(),
                   items: [
                     BottomNavigationBarItem(
                       icon: Icon(Icons.home_filled),

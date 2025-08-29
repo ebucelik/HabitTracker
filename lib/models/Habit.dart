@@ -41,6 +41,12 @@ class Habit {
     return timestampWithNote;
   }
 
+  bool isTimestampNoteAvailale(DateTime selectedDateTime) {
+    TimestampWithNote? timestamp = findTrackedTimestamp(selectedDateTime);
+
+    return timestamp?.note != null && timestamp?.note != "";
+  }
+
   static List<Habit> mock = List.of([
     Habit(
       "Work",

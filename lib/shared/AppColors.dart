@@ -2,11 +2,11 @@ import 'package:habit_tracker/extensions/ColorExtensions.dart';
 import 'package:flutter/material.dart';
 
 enum AppColors {
-  background("222327"),
+  surfaceDark("222327"),
   primary("F1F2F0"),
   primaryDark("161617"),
-  unselectedItem("6B7994"),
-  success("95F54E");
+  secondary("6B7994"),
+  surfaceLight("EDEDED");
 
   const AppColors(this.value);
 

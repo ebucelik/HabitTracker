@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
+import 'package:habit_tracker/themes/dark_mode.dart';
 import 'package:habit_tracker/themes/light_mode.dart';
 import 'package:habit_tracker/views/HabitHeatMap.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
@@ -28,6 +29,7 @@ class _HabitWidgetState extends State<HabitWidget> {
   double trackButtonBackgroundWidth = 0;
   double successBackgroundHeight = 0;
   DateTime selectedDate = DateTime.now();
+  bool showNotesContainer = false;
   bool showNotes = false;
   TimestampWithNote? timestampWithNote;
   bool didTapOnTrack = false;
@@ -77,7 +79,9 @@ class _HabitWidgetState extends State<HabitWidget> {
             isLoopActive = false;
             trackButtonIsPressed = false;
             counter = 0;
-            successBackgroundHeight = widget.isScaled ? 378 : 220;
+            RenderBox box =
+                globalKey.currentContext!.findRenderObject() as RenderBox;
+            successBackgroundHeight = box.size.height;
             widget.habit.timestamps.add(
               TimestampWithNote(timestamp: selectedDate),
             );
@@ -178,6 +182,16 @@ class _HabitWidgetState extends State<HabitWidget> {
     return note != null && note != "";
   }
 
+  void vibrateOnDatetimeSelect() async {
+    final canVibrate = await Haptics.canVibrate();
+
+    if (canVibrate) {
+      await Haptics.vibrate(HapticsType.selection);
+    }
+  }
+
+  final GlobalKey globalKey = GlobalKey();
+
   @override
   Widget build(BuildContext context) {
     colorScheme = Theme.of(context).colorScheme;
@@ -186,9 +200,9 @@ class _HabitWidgetState extends State<HabitWidget> {
       alignment: AlignmentGeometry.bottomCenter,
       children: [
         AnimatedContainer(
+          key: globalKey,
           duration: Duration(milliseconds: widget.isScaled ? 0 : 300),
           width: double.infinity,
-          height: widget.isScaled ? 378 : 220,
           child: Column(
             children: [headerWidget(), bodyWidget(), footerWidget()],
           ),
@@ -203,7 +217,17 @@ class _HabitWidgetState extends State<HabitWidget> {
                 ? widget.habit.color
                 : Colors.transparent,
             border: Border.all(width: 2, color: colorScheme.primary),
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: successBackgroundHeight > 0
+                ? [
+                    BoxShadow(
+                      color: colorScheme.primary.withValues(alpha: 0.3),
+                      spreadRadius: 1,
+                      blurRadius: 8,
+                      offset: Offset(0, 0), // changes position of shadow
+                    ),
+                  ]
+                : [],
           ),
           child: Center(
             child: Stack(
@@ -267,102 +291,78 @@ class _HabitWidgetState extends State<HabitWidget> {
   }
 
   Widget bodyWidget() {
-    return Expanded(
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(width: 2, color: colorScheme.primary),
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(10),
-            topRight: Radius.circular(10),
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: colorScheme.inversePrimary,
+              border: Border.all(
+                width: 1,
+                color: colorScheme.primary.withValues(alpha: 0.3),
+              ),
+              borderRadius: BorderRadius.circular(8),
+              boxShadow: [
+                BoxShadow(
+                  color: colorScheme.primary.withValues(alpha: 0.1),
+                  spreadRadius: 1,
+                  blurRadius: 1,
+                  offset: Offset(0, 0), // changes position of shadow
+                ),
+              ],
+            ),
+            padding: EdgeInsets.fromLTRB(
+              8,
+              widget.isScaled ? 0 : 8,
+              8,
+              widget.isScaled ? 0 : 8,
+            ),
+            child: HabitHeatMap(
+              habit: widget.habit,
+              isScaled: widget.isScaled,
+              onDateTimeSelected: (selectedDateTime) => setState(() {
+                vibrateOnDatetimeSelect();
+
+                showNotesContainer = false;
+                selectedDate = selectedDateTime;
+                timestampWithNote = widget.habit.findTrackedTimestamp(
+                  selectedDateTime,
+                );
+              }),
+            ),
           ),
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        topRight: Radius.circular(10),
+        AnimatedContainer(
+          margin: showNotesContainer
+              ? EdgeInsets.symmetric(horizontal: 4)
+              : null,
+          padding: showNotesContainer ? EdgeInsets.all(4) : null,
+          duration: Duration(milliseconds: 200),
+          width: showNotesContainer ? 100 : 0,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: showNotes
+                ? [
+                    Text(
+                      getSelectedDate(),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
                       ),
                     ),
-                    padding: EdgeInsets.only(
-                      left: 8,
-                      top: widget.isScaled ? 0 : 6,
-                      right: 8,
-                      bottom: 0,
+                    Text(
+                      getTimestampNote(timestampWithNote),
+                      style: TextStyle(fontSize: 10),
                     ),
-                    child: HabitHeatMap(
-                      habit: widget.habit,
-                      isScaled: widget.isScaled,
-                      onDateTimeSelected: (selectedDateTime) => setState(() {
-                        showNotes = false;
-                        selectedDate = selectedDateTime;
-                      }),
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Expanded(child: Container()),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary.withAlpha(150),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8),
-                            topRight: Radius.circular(8),
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            AnimatedContainer(
-                              duration: Duration(milliseconds: 200),
-                              width: showNotes ? 100 : 0,
-                              margin: showNotes
-                                  ? EdgeInsets.fromLTRB(
-                                      4,
-                                      widget.isScaled ? 24 : 9,
-                                      0,
-                                      4,
-                                    )
-                                  : null,
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: showNotes
-                                    ? [
-                                        Text(
-                                          getSelectedDate(),
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                            color: colorScheme.surface,
-                                          ),
-                                        ),
-
-                                        Text(
-                                          getTimestampNote(timestampWithNote),
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            color: colorScheme.surface,
-                                          ),
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+                  ]
+                : [],
+          ),
+          onEnd: () => setState(() {
+            showNotes = showNotesContainer;
+          }),
         ),
-      ),
+      ],
     );
   }
 
@@ -390,70 +390,63 @@ class _HabitWidgetState extends State<HabitWidget> {
   }
 
   Widget trackButtonWidget() {
-    return SizedBox(
+    return Container(
+      margin: EdgeInsets.only(top: 8),
       height: 50,
-      child: Stack(
+      child: Row(
         children: [
-          AnimatedContainer(
-            duration: Duration(milliseconds: 800),
-            alignment: AlignmentGeometry.center,
-            height: double.infinity,
-            width: isSelectedTimestampTracked()
-                ? widthToReach
-                : trackButtonBackgroundWidth,
-            decoration: BoxDecoration(
-              color: widget.habit.color,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(9),
-                bottomRight: Radius.circular(9),
-              ),
-            ),
-          ),
-          Container(
-            alignment: AlignmentGeometry.center,
-            height: double.infinity,
-            decoration: BoxDecoration(
-              color: widget.habit.color.withAlpha(150),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(9),
-                bottomRight: Radius.circular(9),
-              ),
-              border: Border(
-                left: BorderSide(width: 2, color: colorScheme.primary),
-                right: BorderSide(width: 2, color: colorScheme.primary),
-                bottom: BorderSide(width: 2, color: colorScheme.primary),
-              ),
-            ),
-            child: Row(
+          Expanded(
+            child: Stack(
               children: [
-                Expanded(
-                  child: Container(
-                    decoration:
-                        isSelectedTimestampTracked() &&
-                            isTimestampNoteAvailable()
-                        ? BoxDecoration(
-                            border: Border(
-                              right: BorderSide(
-                                width: 1,
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                          )
-                        : null,
+                AnimatedContainer(
+                  duration: Duration(milliseconds: 800),
+                  alignment: AlignmentGeometry.center,
+                  height: double.infinity,
+                  width: isSelectedTimestampTracked()
+                      ? widthToReach
+                      : trackButtonBackgroundWidth,
+                  decoration: BoxDecoration(
+                    color: widget.habit.color,
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                ),
+                Container(
+                  alignment: AlignmentGeometry.center,
+                  height: double.infinity,
+                  decoration: BoxDecoration(
+                    color: widget.habit.color.withAlpha(150),
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.primary.withValues(alpha: 0.1),
+                        spreadRadius: 1,
+                        blurRadius: 4,
+                        offset: Offset(0, 0), // changes position of shadow
+                      ),
+                    ],
+                  ),
+                  child: Center(
                     child: isSelectedTimestampTracked()
-                        ? Center(
-                            child: Icon(Icons.check_circle_outline, size: 30),
+                        ? Icon(
+                            Icons.check_circle_outline,
+                            size: 30,
+                            color: AppColors.primary.color(),
                           )
                         : Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.check, size: didTapOnTrack ? 20 : 30),
+                              Icon(
+                                Icons.check,
+                                size: didTapOnTrack ? 20 : 30,
+                                color: AppColors.primary.color(),
+                              ),
                               didTapOnTrack
                                   ? Text(
                                       "Hold to track",
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
+                                        color: AppColors.primary.color(),
                                       ),
                                     )
                                   : Container(),
@@ -461,36 +454,29 @@ class _HabitWidgetState extends State<HabitWidget> {
                           ),
                   ),
                 ),
-                isSelectedTimestampTracked() && isTimestampNoteAvailable()
-                    ? Container(
-                        padding: EdgeInsets.symmetric(horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                          border: Border(
-                            left: BorderSide(
-                              width: isSelectedTimestampTracked() ? 1 : 0,
-                              color: colorScheme.primary,
-                            ),
-                          ),
-                          borderRadius: BorderRadius.only(
-                            bottomRight: Radius.circular(6),
-                          ),
-                        ),
-                        child: Center(
-                          child: IconButton(
-                            onPressed: () => showNotes = !showNotes,
-                            icon: Icon(
-                              Icons.info_rounded,
-                              size: 30,
-                              color: colorScheme.secondary,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Container(),
               ],
             ),
           ),
+          isSelectedTimestampTracked() && isTimestampNoteAvailable()
+              ? Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Center(
+                    child: IconButton(
+                      onPressed: () => {
+                        setState(() {
+                          showNotesContainer = !showNotesContainer;
+                          showNotes = !showNotesContainer ? false : showNotes;
+                        }),
+                      },
+                      icon: Icon(
+                        Icons.info_rounded,
+                        size: 30,
+                        color: colorScheme.secondary,
+                      ),
+                    ),
+                  ),
+                )
+              : Container(),
         ],
       ),
     );

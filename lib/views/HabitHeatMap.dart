@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_heatmap_calendar/flutter_heatmap_calendar.dart';
 import 'package:habit_tracker/models/Habit.dart';
+import 'package:habit_tracker/views/HeatMap/data/heatmap_color_mode.dart';
+import 'package:habit_tracker/views/HeatMap/heatmap.dart';
 
 class HabitHeatMap extends StatefulWidget {
   const HabitHeatMap({
@@ -19,15 +20,13 @@ class HabitHeatMap extends StatefulWidget {
 }
 
 class _HabitHeatMapState extends State<HabitHeatMap> {
-  DateTime? selectedDateTime;
+  DateTime selectedDateTime = DateTime.now();
 
   @override
   Widget build(BuildContext context) {
     return HeatMap(
-      colorsets: {
-        1: widget.habit.color,
-        2: Theme.of(context).colorScheme.secondary,
-      },
+      endDate: DateTime.now().add(Duration(days: 1)),
+      colorsets: {1: widget.habit.color},
       colorMode: ColorMode.color,
       fontSize: widget.isScaled ? 10 : 6,
       defaultColor: widget.habit.color.withAlpha(50),
@@ -38,11 +37,6 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
             timestamp.timestamp.month,
             timestamp.timestamp.day,
           ): 1,
-        DateTime(
-          selectedDateTime?.year ?? 1980,
-          selectedDateTime?.month ?? 1,
-          selectedDateTime?.day ?? 1,
-        ): 2,
       },
       showColorTip: false,
       scrollable: true,
@@ -53,6 +47,9 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
         selectedDateTime = dateTime;
         widget.onDateTimeSelected(dateTime);
       }),
+      selectedDateTime: selectedDateTime,
+      isScaled: widget.isScaled,
+      habit: widget.habit,
     );
   }
 }
