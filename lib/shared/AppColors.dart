@@ -16,3 +16,7 @@ enum AppColors {
     return ("FF0$value").toColor();
   }
 }
+
+Color color(String value) {
+  return ("FF0$value").toColor();
+}

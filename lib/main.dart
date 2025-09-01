@@ -1,18 +1,25 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:habit_tracker/models/Habit.dart';
+import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
-import 'package:habit_tracker/themes/light_mode.dart';
 import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/LaunchScreenWidget.dart';
 import 'package:habit_tracker/views/HomeWidget.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Database.initialize();
+  await Database().getHabits();
+
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => Database()),
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+      ],
       child: const MainApp(),
     ),
   );
@@ -30,7 +37,7 @@ class _MainAppState extends State<MainApp> {
   int selectedIndex = 0;
 
   final List<Widget> tabWidgets = [
-    HomeWidget(habits: Habit.mock),
+    HomeWidget(),
     Text("Habit Entry"),
     Text("Account"),
   ];
@@ -64,23 +71,12 @@ class _MainAppState extends State<MainApp> {
               length: 3,
               child: Scaffold(
                 extendBody: true,
-                appBar: AppBar(
-                  title: Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.asset(
-                        "assets/images/HabitTrackerLogo.png",
-                        width: 40,
-                        height: 40,
-                      ),
-                    ),
-                  ),
-                ),
                 body: tabWidgets.elementAt(selectedIndex),
                 bottomNavigationBar: BottomNavigationBar(
                   showSelectedLabels: false,
                   showUnselectedLabels: false,
                   type: BottomNavigationBarType.fixed,
+                  selectedItemColor: Theme.of(context).colorScheme.primary,
                   unselectedItemColor: AppColors.secondary.color(),
                   items: [
                     BottomNavigationBarItem(

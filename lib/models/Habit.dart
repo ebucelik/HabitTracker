@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/HabitCategory.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
+import 'package:isar/isar.dart';
 
+part 'Habit.g.dart';
+
+@Collection()
 class Habit {
-  String name;
+  Id id = Isar.autoIncrement;
   String description;
-  IconData iconData;
-  Color color;
+  String name;
+  int iconCodePoint;
+  String color;
   int streak;
-  HabitCategory category;
+  String category;
   bool showNote;
-  List<TimestampWithNote> timestamps;
+  List<TimestampWithNote> timestamps = [];
 
   Habit(
+    this.id,
     this.name,
     this.description,
-    this.iconData,
+    this.iconCodePoint,
     this.color,
     this.streak,
     this.category,
@@ -32,9 +38,9 @@ class Habit {
         .cast<TimestampWithNote?>()
         .firstWhere(
           (timestamp) =>
-              timestamp?.timestamp.day == selectedTimestamp.day &&
-              timestamp?.timestamp.month == selectedTimestamp.month &&
-              timestamp?.timestamp.year == selectedTimestamp.year,
+              timestamp?.timestamp?.day == selectedTimestamp.day &&
+              timestamp?.timestamp?.month == selectedTimestamp.month &&
+              timestamp?.timestamp?.year == selectedTimestamp.year,
           orElse: () => null,
         );
 
@@ -49,24 +55,26 @@ class Habit {
 
   static List<Habit> mock = List.of([
     Habit(
+      0,
       "Work",
       "2 hours of pure work.",
-      Icons.work,
-      Colors.blue,
+      Icons.work.codePoint,
+      Colors.blue.toARGB32().toRadixString(16),
       0,
-      HabitCategory.work,
+      HabitCategory.work.value,
       false,
       List.of([
         TimestampWithNote(timestamp: DateTime.now(), note: "Ebu"),
       ], growable: true),
     ),
     Habit(
+      1,
       "Gym",
       "Go 5 times a week",
-      Icons.fitness_center,
-      Colors.red,
+      Icons.fitness_center.codePoint,
+      Colors.red.toARGB32().toRadixString(16),
       4,
-      HabitCategory.fitness,
+      HabitCategory.fitness.value,
       false,
       List.of([
         TimestampWithNote(
@@ -76,12 +84,13 @@ class Habit {
       ], growable: true),
     ),
     Habit(
+      2,
       "Stop Sugar",
       "Don't eat sugar!",
-      Icons.apple,
-      Colors.orange,
+      Icons.apple.codePoint,
+      Colors.orange.toARGB32().toRadixString(16),
       2,
-      HabitCategory.nutrition,
+      HabitCategory.nutrition.value,
       false,
       List.of([
         TimestampWithNote(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/themes/dark_mode.dart';
 import 'package:habit_tracker/themes/theme_provider.dart';
@@ -6,20 +7,37 @@ import 'package:habit_tracker/views/HabitWidget.dart';
 import 'package:provider/provider.dart';
 
 class HomeWidget extends StatefulWidget {
-  const HomeWidget({super.key, required this.habits});
+  const HomeWidget({super.key});
 
   @override
   State<HomeWidget> createState() => HomeWidgetState();
-
-  final List<Habit> habits;
 }
 
 class HomeWidgetState extends State<HomeWidget> {
-  bool isScaled = false;
-
   @override
   Widget build(BuildContext context) {
+    final database = context.watch<Database>();
+
+    List<Habit> habits = database.habits;
+
     return Scaffold(
+      appBar: AppBar(
+        title: ClipRRect(
+          borderRadius: BorderRadius.circular(8),
+          child: Image.asset(
+            "assets/images/HabitTrackerLogo.png",
+            width: 40,
+            height: 40,
+          ),
+        ),
+        actions: [
+          IconButton(
+            iconSize: 30,
+            onPressed: () => print("pressed"),
+            icon: Icon(Icons.add_circle_outline_rounded),
+          ),
+        ],
+      ),
       body: Center(
         child: ListView(
           shrinkWrap: false,
@@ -27,9 +45,8 @@ class HomeWidgetState extends State<HomeWidget> {
               <Widget>[
                 Row(
                   children: [
-                    Expanded(child: Container()),
                     Container(
-                      margin: EdgeInsets.only(right: 6),
+                      margin: EdgeInsets.only(right: 6, left: 12),
                       height: 35,
                       width: 70,
                       decoration: BoxDecoration(
@@ -55,7 +72,6 @@ class HomeWidgetState extends State<HomeWidget> {
                       ),
                     ),
                     Container(
-                      margin: EdgeInsets.only(right: 12),
                       height: 35,
                       width: 70,
                       decoration: BoxDecoration(
@@ -67,27 +83,34 @@ class HomeWidgetState extends State<HomeWidget> {
                       ),
                       child: TextButton(
                         onPressed: () => setState(() {
-                          isScaled = !isScaled;
+                          Provider.of<ThemeProvider>(
+                            context,
+                            listen: false,
+                          ).toggleIsScaled();
                         }),
                         child: Icon(
-                          isScaled
+                          Provider.of<ThemeProvider>(
+                                context,
+                                listen: false,
+                              ).isScaled
                               ? Icons.zoom_in_map_rounded
                               : Icons.zoom_out_map_rounded,
                           size: 18,
                         ),
                       ),
                     ),
+                    Expanded(child: Container()),
                   ],
                 ),
               ] +
-              widget.habits
+              habits
                   .map(
                     (habit) => Padding(
                       padding: EdgeInsetsGeometry.symmetric(
                         horizontal: 8,
                         vertical: 16,
                       ),
-                      child: HabitWidget(habit: habit, isScaled: isScaled),
+                      child: HabitWidget(habit: habit),
                     ),
                   )
                   .toList(),

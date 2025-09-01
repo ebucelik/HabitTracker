@@ -1,6 +1,11 @@
+import 'package:isar/isar.dart';
+
+part 'TimestampWithNote.g.dart';
+
+@embedded
 class TimestampWithNote {
-  DateTime timestamp;
+  DateTime? timestamp;
   String? note;
 
-  TimestampWithNote({required this.timestamp, this.note});
+  TimestampWithNote({this.timestamp, this.note});
 }

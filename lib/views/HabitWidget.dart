@@ -4,18 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
-import 'package:habit_tracker/themes/dark_mode.dart';
 import 'package:habit_tracker/themes/light_mode.dart';
+import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/HabitHeatMap.dart';
 import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
+import 'package:provider/provider.dart';
 
 class HabitWidget extends StatefulWidget {
-  const HabitWidget({super.key, required this.habit, required this.isScaled});
+  const HabitWidget({super.key, required this.habit});
 
   final Habit habit;
-  final bool isScaled;
 
   @override
   State<HabitWidget> createState() => _HabitWidgetState();
@@ -147,9 +147,9 @@ class _HabitWidgetState extends State<HabitWidget> {
 
         widget.habit.timestamps.removeWhere(
           (timestamp) =>
-              timestamp.timestamp.day == selectedDate.day &&
-              timestamp.timestamp.month == selectedDate.month &&
-              timestamp.timestamp.year == selectedDate.year,
+              timestamp.timestamp?.day == selectedDate.day &&
+              timestamp.timestamp?.month == selectedDate.month &&
+              timestamp.timestamp?.year == selectedDate.year,
         );
       });
     }
@@ -194,6 +194,7 @@ class _HabitWidgetState extends State<HabitWidget> {
 
   @override
   Widget build(BuildContext context) {
+    bool isScaled = Provider.of<ThemeProvider>(context, listen: false).isScaled;
     colorScheme = Theme.of(context).colorScheme;
 
     return Stack(
@@ -201,7 +202,7 @@ class _HabitWidgetState extends State<HabitWidget> {
       children: [
         AnimatedContainer(
           key: globalKey,
-          duration: Duration(milliseconds: widget.isScaled ? 0 : 300),
+          duration: Duration(milliseconds: isScaled ? 0 : 300),
           width: double.infinity,
           child: Column(
             children: [headerWidget(), bodyWidget(), footerWidget()],
@@ -214,7 +215,7 @@ class _HabitWidgetState extends State<HabitWidget> {
           padding: EdgeInsets.only(top: 8),
           decoration: BoxDecoration(
             color: successBackgroundHeight > 0
-                ? widget.habit.color
+                ? color(widget.habit.color)
                 : Colors.transparent,
             border: Border.all(width: 2, color: colorScheme.primary),
             borderRadius: BorderRadius.circular(6),
@@ -261,7 +262,11 @@ class _HabitWidgetState extends State<HabitWidget> {
       child: Row(
         spacing: 8,
         children: [
-          Icon(widget.habit.iconData, color: widget.habit.color, size: 35),
+          Icon(
+            IconData(widget.habit.iconCodePoint, fontFamily: "MaterialIcons"),
+            color: color(widget.habit.color),
+            size: 35,
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -291,6 +296,8 @@ class _HabitWidgetState extends State<HabitWidget> {
   }
 
   Widget bodyWidget() {
+    bool isScaled = Provider.of<ThemeProvider>(context, listen: false).isScaled;
+
     return Row(
       children: [
         Expanded(
@@ -313,13 +320,13 @@ class _HabitWidgetState extends State<HabitWidget> {
             ),
             padding: EdgeInsets.fromLTRB(
               8,
-              widget.isScaled ? 0 : 8,
+              isScaled ? 0 : 8,
               8,
-              widget.isScaled ? 0 : 8,
+              isScaled ? 0 : 8,
             ),
             child: HabitHeatMap(
               habit: widget.habit,
-              isScaled: widget.isScaled,
+              isScaled: isScaled,
               onDateTimeSelected: (selectedDateTime) => setState(() {
                 vibrateOnDatetimeSelect();
 
@@ -406,7 +413,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                       ? widthToReach
                       : trackButtonBackgroundWidth,
                   decoration: BoxDecoration(
-                    color: widget.habit.color,
+                    color: color(widget.habit.color),
                     borderRadius: BorderRadius.circular(6),
                   ),
                 ),
@@ -414,7 +421,7 @@ class _HabitWidgetState extends State<HabitWidget> {
                   alignment: AlignmentGeometry.center,
                   height: double.infinity,
                   decoration: BoxDecoration(
-                    color: widget.habit.color.withAlpha(150),
+                    color: color(widget.habit.color).withAlpha(150),
                     borderRadius: BorderRadius.circular(6),
                     boxShadow: [
                       BoxShadow(

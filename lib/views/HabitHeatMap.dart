@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/Habit.dart';
+import 'package:habit_tracker/shared/AppColors.dart';
 import 'package:habit_tracker/views/HeatMap/data/heatmap_color_mode.dart';
 import 'package:habit_tracker/views/HeatMap/heatmap.dart';
 
@@ -24,18 +25,20 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
 
   @override
   Widget build(BuildContext context) {
+    final now = DateTime.now();
+
     return HeatMap(
-      endDate: DateTime.now().add(Duration(days: 1)),
-      colorsets: {1: widget.habit.color},
+      endDate: now.add(Duration(days: 6 - now.weekday)),
+      colorsets: {1: color(widget.habit.color)},
       colorMode: ColorMode.color,
       fontSize: widget.isScaled ? 10 : 6,
-      defaultColor: widget.habit.color.withAlpha(50),
+      defaultColor: color(widget.habit.color).withAlpha(50),
       datasets: {
         for (var timestamp in widget.habit.timestamps)
           DateTime(
-            timestamp.timestamp.year,
-            timestamp.timestamp.month,
-            timestamp.timestamp.day,
+            timestamp.timestamp?.year ?? 0,
+            timestamp.timestamp?.month ?? 0,
+            timestamp.timestamp?.day ?? 0,
           ): 1,
       },
       showColorTip: false,
