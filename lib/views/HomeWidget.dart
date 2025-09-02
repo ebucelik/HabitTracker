@@ -1,8 +1,10 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/themes/dark_mode.dart';
 import 'package:habit_tracker/themes/theme_provider.dart';
+import 'package:habit_tracker/views/CreateHabitWidget.dart';
 import 'package:habit_tracker/views/HabitWidget.dart';
 import 'package:provider/provider.dart';
 
@@ -20,25 +22,28 @@ class HomeWidgetState extends State<HomeWidget> {
 
     List<Habit> habits = database.habits;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: ClipRRect(
+    return CupertinoPageScaffold(
+      navigationBar: CupertinoNavigationBar(
+        backgroundColor: Theme.of(
+          context,
+        ).colorScheme.surface.withValues(alpha: 0.8),
+        middle: ClipRRect(
           borderRadius: BorderRadius.circular(8),
-          child: Image.asset(
-            "assets/images/HabitTrackerLogo.png",
-            width: 40,
-            height: 40,
-          ),
+          child: Image.asset("assets/images/HabitTrackerLogo.png"),
         ),
-        actions: [
-          IconButton(
-            iconSize: 30,
-            onPressed: () => print("pressed"),
-            icon: Icon(Icons.add_circle_outline_rounded),
-          ),
-        ],
+        trailing: IconButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              CupertinoPageRoute<void>(
+                builder: (context) => const CreateHabitWidget(),
+              ),
+            );
+          },
+          icon: Icon(Icons.add_circle_outline_rounded),
+        ),
       ),
-      body: Center(
+      child: Center(
         child: ListView(
           shrinkWrap: false,
           children:

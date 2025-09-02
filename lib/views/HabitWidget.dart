@@ -11,6 +11,7 @@ import 'package:haptic_feedback/haptic_feedback.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:unicode_emojis/unicode_emojis.dart';
 
 class HabitWidget extends StatefulWidget {
   const HabitWidget({super.key, required this.habit});
@@ -262,10 +263,11 @@ class _HabitWidgetState extends State<HabitWidget> {
       child: Row(
         spacing: 8,
         children: [
-          Icon(
-            IconData(widget.habit.iconCodePoint, fontFamily: "MaterialIcons"),
-            color: color(widget.habit.color),
-            size: 35,
+          Text(
+            UnicodeEmojis.allEmojis
+                .firstWhere((emoji) => emoji.unified == widget.habit.emoji)
+                .emoji,
+            style: TextStyle(fontSize: 35),
           ),
           Expanded(
             child: Column(

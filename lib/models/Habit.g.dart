@@ -32,10 +32,10 @@ const HabitSchema = CollectionSchema(
       name: r'description',
       type: IsarType.string,
     ),
-    r'iconCodePoint': PropertySchema(
+    r'emoji': PropertySchema(
       id: 3,
-      name: r'iconCodePoint',
-      type: IsarType.long,
+      name: r'emoji',
+      type: IsarType.string,
     ),
     r'name': PropertySchema(
       id: 4,
@@ -82,6 +82,7 @@ int _habitEstimateSize(
   bytesCount += 3 + object.category.length * 3;
   bytesCount += 3 + object.color.length * 3;
   bytesCount += 3 + object.description.length * 3;
+  bytesCount += 3 + object.emoji.length * 3;
   bytesCount += 3 + object.name.length * 3;
   bytesCount += 3 + object.timestamps.length * 3;
   {
@@ -104,7 +105,7 @@ void _habitSerialize(
   writer.writeString(offsets[0], object.category);
   writer.writeString(offsets[1], object.color);
   writer.writeString(offsets[2], object.description);
-  writer.writeLong(offsets[3], object.iconCodePoint);
+  writer.writeString(offsets[3], object.emoji);
   writer.writeString(offsets[4], object.name);
   writer.writeBool(offsets[5], object.showNote);
   writer.writeLong(offsets[6], object.streak);
@@ -126,7 +127,7 @@ Habit _habitDeserialize(
     id,
     reader.readString(offsets[4]),
     reader.readString(offsets[2]),
-    reader.readLong(offsets[3]),
+    reader.readString(offsets[3]),
     reader.readString(offsets[1]),
     reader.readLong(offsets[6]),
     reader.readString(offsets[0]),
@@ -156,7 +157,7 @@ P _habitDeserializeProp<P>(
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
@@ -652,55 +653,130 @@ extension HabitQueryFilter on QueryBuilder<Habit, Habit, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> iconCodePointEqualTo(
-      int value) {
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'iconCodePoint',
+        property: r'emoji',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> iconCodePointGreaterThan(
-    int value, {
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiGreaterThan(
+    String value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'iconCodePoint',
+        property: r'emoji',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> iconCodePointLessThan(
-    int value, {
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiLessThan(
+    String value, {
     bool include = false,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'iconCodePoint',
+        property: r'emoji',
         value: value,
+        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> iconCodePointBetween(
-    int lower,
-    int upper, {
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'iconCodePoint',
+        property: r'emoji',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'emoji',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'emoji',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiContains(String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'emoji',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiMatches(String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'emoji',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'emoji',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Habit, Habit, QAfterFilterCondition> emojiIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'emoji',
+        value: '',
       ));
     });
   }
@@ -1080,15 +1156,15 @@ extension HabitQuerySortBy on QueryBuilder<Habit, Habit, QSortBy> {
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterSortBy> sortByIconCodePoint() {
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByEmoji() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'iconCodePoint', Sort.asc);
+      return query.addSortBy(r'emoji', Sort.asc);
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterSortBy> sortByIconCodePointDesc() {
+  QueryBuilder<Habit, Habit, QAfterSortBy> sortByEmojiDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'iconCodePoint', Sort.desc);
+      return query.addSortBy(r'emoji', Sort.desc);
     });
   }
 
@@ -1166,15 +1242,15 @@ extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterSortBy> thenByIconCodePoint() {
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByEmoji() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'iconCodePoint', Sort.asc);
+      return query.addSortBy(r'emoji', Sort.asc);
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterSortBy> thenByIconCodePointDesc() {
+  QueryBuilder<Habit, Habit, QAfterSortBy> thenByEmojiDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'iconCodePoint', Sort.desc);
+      return query.addSortBy(r'emoji', Sort.desc);
     });
   }
 
@@ -1249,9 +1325,10 @@ extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
     });
   }
 
-  QueryBuilder<Habit, Habit, QDistinct> distinctByIconCodePoint() {
+  QueryBuilder<Habit, Habit, QDistinct> distinctByEmoji(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'iconCodePoint');
+      return query.addDistinctBy(r'emoji', caseSensitive: caseSensitive);
     });
   }
 
@@ -1300,9 +1377,9 @@ extension HabitQueryProperty on QueryBuilder<Habit, Habit, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Habit, int, QQueryOperations> iconCodePointProperty() {
+  QueryBuilder<Habit, String, QQueryOperations> emojiProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'iconCodePoint');
+      return query.addPropertyName(r'emoji');
     });
   }
 

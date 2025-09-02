@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/HabitCategory.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:isar/isar.dart';
+import 'package:unicode_emojis/unicode_emojis.dart';
 
 part 'Habit.g.dart';
 
@@ -10,7 +11,7 @@ class Habit {
   Id id = Isar.autoIncrement;
   String description;
   String name;
-  int iconCodePoint;
+  String emoji;
   String color;
   int streak;
   String category;
@@ -21,7 +22,7 @@ class Habit {
     this.id,
     this.name,
     this.description,
-    this.iconCodePoint,
+    this.emoji,
     this.color,
     this.streak,
     this.category,
@@ -58,7 +59,7 @@ class Habit {
       0,
       "Work",
       "2 hours of pure work.",
-      Icons.work.codePoint,
+      UnicodeEmojis.allEmojis.first.emoji,
       Colors.blue.toARGB32().toRadixString(16),
       0,
       HabitCategory.work.value,
@@ -71,7 +72,7 @@ class Habit {
       1,
       "Gym",
       "Go 5 times a week",
-      Icons.fitness_center.codePoint,
+      UnicodeEmojis.allEmojis.first.emoji,
       Colors.red.toARGB32().toRadixString(16),
       4,
       HabitCategory.fitness.value,
@@ -87,7 +88,7 @@ class Habit {
       2,
       "Stop Sugar",
       "Don't eat sugar!",
-      Icons.apple.codePoint,
+      UnicodeEmojis.allEmojis.first.emoji,
       Colors.orange.toARGB32().toRadixString(16),
       2,
       HabitCategory.nutrition.value,
