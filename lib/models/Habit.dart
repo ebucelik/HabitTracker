@@ -16,7 +16,7 @@ class Habit {
   int streak;
   String category;
   bool showNote;
-  List<TimestampWithNote> timestamps = [];
+  List<TimestampWithNote> timestamps = List.of([], growable: true);
 
   Habit(
     this.id,
@@ -53,6 +53,18 @@ class Habit {
 
     return timestamp?.note != null && timestamp?.note != "";
   }
+
+  static Habit empty = Habit(
+    0,
+    "",
+    "",
+    "",
+    "",
+    0,
+    "",
+    false,
+    List.of([], growable: true),
+  );
 
   static List<Habit> mock = List.of([
     Habit(

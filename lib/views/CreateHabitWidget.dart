@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/views/EmojisWidget.dart';
+import 'package:provider/provider.dart';
 import 'package:unicode_emojis/unicode_emojis.dart';
 
 class CreateHabitWidget extends StatefulWidget {
@@ -15,9 +17,50 @@ class CreateHabitWidget extends StatefulWidget {
 
 class _CreateHabitWidgetState extends State<CreateHabitWidget> {
   Emoji selectedEmoji = UnicodeEmojis.search("smile").first;
+  List<Color> colors = List.of([
+    Colors.blue,
+    Colors.lightBlue,
+    Colors.cyan,
+    Colors.green,
+    Colors.lightGreen,
+    Colors.lime,
+    Colors.yellow,
+    Colors.orange,
+    Colors.deepOrange,
+    Colors.red,
+    Colors.pinkAccent,
+    Colors.pink,
+    Colors.purpleAccent,
+    Colors.purple,
+  ]);
+  Color selectedColor = Colors.blue;
+
+  Habit habit = Habit.empty;
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (widget.habit != null) {
+      habit = widget.habit ?? Habit.empty;
+    }
+  }
+
+  bool isHabitReady() {
+    return habit.name.isNotEmpty &&
+        habit.description.isNotEmpty &&
+        habit.color.isNotEmpty &&
+        habit.emoji.isNotEmpty;
+  }
+
+  void addHabit(Database database) {
+    database.addHabit(habit);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final database = context.watch<Database>();
+
     return Scaffold(
       appBar: CupertinoNavigationBar(
         backgroundColor: Theme.of(
@@ -29,95 +72,203 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
           icon: Icon(CupertinoIcons.back),
         ),
       ),
-      body: ListView(
-        shrinkWrap: true,
-        children: [
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    margin: EdgeInsets.only(top: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    padding: EdgeInsets.symmetric(vertical: 40),
-                    child: TextButton(
-                      child: Text(
-                        selectedEmoji.emoji,
-                        style: TextStyle(
-                          fontSize: 70,
-                          decoration: TextDecoration.none,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      onPressed: () async {
-                        final selectedEmoji = await showModalBottomSheet(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(8),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  Container(
+                    margin: EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            margin: EdgeInsets.only(top: 8),
+                            decoration: BoxDecoration(
+                              color: selectedColor.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(8),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.primary.withValues(alpha: 0.3),
+                                  spreadRadius: 1,
+                                  blurRadius: 8,
+                                  offset: Offset(
+                                    0,
+                                    2,
+                                  ), // changes position of shadow
+                                ),
+                              ],
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: TextButton(
+                              child: Text(
+                                selectedEmoji.emoji,
+                                style: TextStyle(
+                                  fontSize: 90,
+                                  decoration: TextDecoration.none,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              onPressed: () async {
+                                final selectedEmoji =
+                                    await showModalBottomSheet(
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(8),
+                                        ),
+                                      ),
+                                      isScrollControlled: true,
+                                      context: context,
+                                      builder: (context) =>
+                                          FractionallySizedBox(
+                                            heightFactor: 0.8,
+                                            child: EmojisWidget(),
+                                          ),
+                                    );
+
+                                setState(() {
+                                  if (selectedEmoji != null) {
+                                    this.selectedEmoji = selectedEmoji;
+                                    habit.emoji = this.selectedEmoji.unified;
+                                  }
+                                });
+                              },
                             ),
                           ),
-                          isScrollControlled: true,
-                          context: context,
-                          builder: (context) => FractionallySizedBox(
-                            heightFactor: 0.8,
-                            child: EmojisWidget(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                    child: Column(
+                      spacing: 16,
+                      children: [
+                        TextField(
+                          decoration: InputDecoration(
+                            hintText: "Name",
+                            hintStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                            prefixIcon: Icon(
+                              CupertinoIcons.person,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                            border: OutlineInputBorder(),
                           ),
-                        );
-
-                        setState(() {
-                          if (selectedEmoji != null) {
-                            this.selectedEmoji = selectedEmoji;
-                            widget.habit?.emoji = this.selectedEmoji.unified;
-                          }
-                        });
-                      },
+                          onChanged: (value) => {habit.name = value},
+                        ),
+                        TextField(
+                          decoration: InputDecoration(
+                            hintText: "Description",
+                            hintStyle: TextStyle(
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                            prefixIcon: Icon(
+                              CupertinoIcons.pen,
+                              color: Theme.of(context).colorScheme.secondary,
+                            ),
+                            border: OutlineInputBorder(),
+                          ),
+                          onChanged: (value) => {habit.description = value},
+                        ),
+                        GridView.count(
+                          shrinkWrap: true,
+                          crossAxisCount: 7,
+                          mainAxisSpacing: 8,
+                          crossAxisSpacing: 8,
+                          children: colors
+                              .map(
+                                (color) => GestureDetector(
+                                  onTap: () => setState(() {
+                                    selectedColor = color;
+                                    habit.color = color
+                                        .toARGB32()
+                                        .toRadixString(16);
+                                  }),
+                                  child: Stack(
+                                    alignment: AlignmentGeometry.center,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: color,
+                                          border: Border.all(
+                                            color: selectedColor == color
+                                                ? Theme.of(
+                                                    context,
+                                                  ).colorScheme.inversePrimary
+                                                : Colors.transparent,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
+                                        ),
+                                      ),
+                                      selectedColor == color
+                                          ? Icon(
+                                              CupertinoIcons.check_mark,
+                                              color: Theme.of(
+                                                context,
+                                              ).colorScheme.inversePrimary,
+                                            )
+                                          : Container(),
+                                    ],
+                                  ),
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            child: Column(
-              spacing: 16,
-              children: [
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: "Name",
-                    hintStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    prefixIcon: Icon(
-                      CupertinoIcons.person,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    border: OutlineInputBorder(),
+            TextButton(
+              onPressed: () => {addHabit(database), Navigator.pop(context)},
+              child: Container(
+                height: 60,
+                margin: EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: isHabitReady()
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.secondary,
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.secondary,
                   ),
-                  onChanged: (value) => {},
-                ),
-                TextField(
-                  decoration: InputDecoration(
-                    hintText: "Description",
-                    hintStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.secondary,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.primary.withValues(alpha: 0.3),
+                      spreadRadius: 1,
+                      blurRadius: 8,
+                      offset: Offset(0, 0), // changes position of shadow
                     ),
-                    prefixIcon: Icon(
-                      CupertinoIcons.pen,
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
-                    border: OutlineInputBorder(),
-                  ),
-                  onChanged: (value) => {},
+                  ],
                 ),
-              ],
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Save",
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.surface,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
