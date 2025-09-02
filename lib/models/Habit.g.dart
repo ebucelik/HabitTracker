@@ -124,7 +124,6 @@ Habit _habitDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Habit(
-    id,
     reader.readString(offsets[4]),
     reader.readString(offsets[2]),
     reader.readString(offsets[3]),
@@ -140,6 +139,7 @@ Habit _habitDeserialize(
         ) ??
         [],
   );
+  object.id = id;
   return object;
 }
 

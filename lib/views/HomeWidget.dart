@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/cores/Database.dart';
@@ -16,11 +18,38 @@ class HomeWidget extends StatefulWidget {
 }
 
 class HomeWidgetState extends State<HomeWidget> {
+  List<Habit> habits = List.of([], growable: true);
+
+  StreamSubscription? habitStream;
+
+  Future<void> _getHabits() async {
+    habitStream = Database.isar.habits
+        .buildQuery<Habit>()
+        .watch(fireImmediately: true)
+        .listen((habits) {
+          setState(() {
+            this.habits = habits.reversed.toList();
+          });
+        });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _getHabits();
+  }
+
+  @override
+  void dispose() {
+    habitStream?.cancel();
+
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final database = context.watch<Database>();
-
-    List<Habit> habits = database.habits;
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -110,12 +139,33 @@ class HomeWidgetState extends State<HomeWidget> {
               ] +
               habits
                   .map(
-                    (habit) => Padding(
-                      padding: EdgeInsetsGeometry.symmetric(
-                        horizontal: 8,
-                        vertical: 16,
+                    (habit) => Dismissible(
+                      direction: DismissDirection.endToStart,
+                      key: Key(habit.id.toString()),
+                      background: Container(
+                        padding: EdgeInsets.only(right: 16),
+                        decoration: BoxDecoration(color: Colors.red.shade600),
+                        child: Align(
+                          alignment: AlignmentGeometry.centerRight,
+                          child: Text(
+                            "Delete",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                       ),
-                      child: HabitWidget(habit: habit),
+                      onDismissed: (direction) {
+                        database.deleteHabit(habit.id);
+                      },
+                      child: Padding(
+                        padding: EdgeInsetsGeometry.symmetric(
+                          horizontal: 8,
+                          vertical: 16,
+                        ),
+                        child: HabitWidget(habit: habit),
+                      ),
                     ),
                   )
                   .toList(),

@@ -18,16 +18,23 @@ class CreateHabitWidget extends StatefulWidget {
 class _CreateHabitWidgetState extends State<CreateHabitWidget> {
   Emoji selectedEmoji = UnicodeEmojis.search("smile").first;
   List<Color> colors = List.of([
+    Colors.indigo,
+    Colors.indigoAccent,
     Colors.blue,
     Colors.lightBlue,
     Colors.cyan,
+    Colors.greenAccent,
     Colors.green,
     Colors.lightGreen,
+    Colors.lightGreenAccent,
     Colors.lime,
     Colors.yellow,
+    Colors.amberAccent,
+    Colors.amber,
     Colors.orange,
     Colors.deepOrange,
     Colors.red,
+    Colors.redAccent,
     Colors.pinkAccent,
     Colors.pink,
     Colors.purpleAccent,
@@ -35,7 +42,16 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
   ]);
   Color selectedColor = Colors.blue;
 
-  Habit habit = Habit.empty;
+  Habit habit = Habit(
+    "",
+    "",
+    "",
+    "",
+    0,
+    "",
+    false,
+    List.of([], growable: true),
+  );
 
   @override
   void initState() {
@@ -44,17 +60,6 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
     if (widget.habit != null) {
       habit = widget.habit ?? Habit.empty;
     }
-  }
-
-  bool isHabitReady() {
-    return habit.name.isNotEmpty &&
-        habit.description.isNotEmpty &&
-        habit.color.isNotEmpty &&
-        habit.emoji.isNotEmpty;
-  }
-
-  void addHabit(Database database) {
-    database.addHabit(habit);
   }
 
   @override
@@ -229,12 +234,15 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
               ),
             ),
             TextButton(
-              onPressed: () => {addHabit(database), Navigator.pop(context)},
+              onPressed: () => {
+                database.addHabit(habit),
+                Navigator.pop(context),
+              },
               child: Container(
                 height: 60,
                 margin: EdgeInsets.symmetric(horizontal: 8),
                 decoration: BoxDecoration(
-                  color: isHabitReady()
+                  color: habit.isHabitReady()
                       ? Theme.of(context).colorScheme.primary
                       : Theme.of(context).colorScheme.secondary,
                   border: Border.all(

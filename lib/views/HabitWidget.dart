@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
@@ -52,7 +53,7 @@ class _HabitWidgetState extends State<HabitWidget> {
     super.dispose();
   }
 
-  void increaseCounterWhileTrackButtonIsPressed() async {
+  void increaseCounterWhileTrackButtonIsPressed(BuildContext context) async {
     trackButtonIsPressed = true;
 
     if (isLoopActive || isSelectedTimestampTracked()) return;
@@ -83,9 +84,13 @@ class _HabitWidgetState extends State<HabitWidget> {
             RenderBox box =
                 globalKey.currentContext!.findRenderObject() as RenderBox;
             successBackgroundHeight = box.size.height;
-            widget.habit.timestamps.add(
-              TimestampWithNote(timestamp: selectedDate),
-            );
+            final timestamps = widget.habit.timestamps.toList();
+            timestamps.add(TimestampWithNote(timestamp: selectedDate));
+
+            widget.habit.timestamps = timestamps;
+
+            final database = Provider.of<Database>(context, listen: false);
+            database.addHabit(widget.habit);
           });
         }
 
@@ -381,7 +386,7 @@ class _HabitWidgetState extends State<HabitWidget> {
       onPointerCancel: (_) => resetTrackButton(),
       child: InkWell(
         onTap: () => setDidTapOnTrack(),
-        onLongPress: () => increaseCounterWhileTrackButtonIsPressed(),
+        onLongPress: () => increaseCounterWhileTrackButtonIsPressed(context),
         child: LayoutBuilder(
           builder: (context, constraints) {
             widthToReach = constraints.widthConstraints().maxWidth;

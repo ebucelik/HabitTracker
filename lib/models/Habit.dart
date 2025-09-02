@@ -16,10 +16,9 @@ class Habit {
   int streak;
   String category;
   bool showNote;
-  List<TimestampWithNote> timestamps = List.of([], growable: true);
+  List<TimestampWithNote> timestamps = List.empty(growable: true);
 
   Habit(
-    this.id,
     this.name,
     this.description,
     this.emoji,
@@ -54,8 +53,14 @@ class Habit {
     return timestamp?.note != null && timestamp?.note != "";
   }
 
+  bool isHabitReady() {
+    return name.isNotEmpty &&
+        description.isNotEmpty &&
+        color.isNotEmpty &&
+        emoji.isNotEmpty;
+  }
+
   static Habit empty = Habit(
-    0,
     "",
     "",
     "",
@@ -68,7 +73,6 @@ class Habit {
 
   static List<Habit> mock = List.of([
     Habit(
-      0,
       "Work",
       "2 hours of pure work.",
       UnicodeEmojis.allEmojis.first.emoji,
@@ -81,7 +85,6 @@ class Habit {
       ], growable: true),
     ),
     Habit(
-      1,
       "Gym",
       "Go 5 times a week",
       UnicodeEmojis.allEmojis.first.emoji,
@@ -97,7 +100,6 @@ class Habit {
       ], growable: true),
     ),
     Habit(
-      2,
       "Stop Sugar",
       "Don't eat sugar!",
       UnicodeEmojis.allEmojis.first.emoji,

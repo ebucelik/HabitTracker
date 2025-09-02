@@ -12,7 +12,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Database.initialize();
-  await Database().getHabits();
 
   runApp(
     MultiProvider(

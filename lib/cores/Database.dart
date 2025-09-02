@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 class Database extends ChangeNotifier {
   static late Isar isar;
 
-  final List<Habit> habits = [];
+  final List<Habit> habits = List.of([], growable: true);
 
   static Future<void> initialize() async {
     final dir = await getApplicationDocumentsDirectory();
