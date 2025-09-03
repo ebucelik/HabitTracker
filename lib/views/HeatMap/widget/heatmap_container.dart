@@ -15,6 +15,7 @@ class HeatMapContainer extends StatefulWidget {
   final bool? isScaled;
   final bool? hasNote;
   final Function(DateTime dateTime)? onClick;
+  final Function() onDoubleClick;
 
   const HeatMapContainer({
     Key? key,
@@ -31,6 +32,7 @@ class HeatMapContainer extends StatefulWidget {
     this.isScaled,
     this.hasNote,
     this.onClick,
+    required this.onDoubleClick,
   }) : super(key: key);
 
   @override
@@ -45,6 +47,9 @@ class _HeatMapContainerState extends State<HeatMapContainer> {
     return Padding(
       padding: widget.margin ?? const EdgeInsets.all(2),
       child: GestureDetector(
+        onTap: () =>
+            widget.onClick != null ? widget.onClick!(widget.date) : null,
+        onDoubleTap: () => widget.onDoubleClick(),
         child: Stack(
           children: [
             Container(
@@ -95,8 +100,6 @@ class _HeatMapContainerState extends State<HeatMapContainer> {
                 : Container(),
           ],
         ),
-        onTap: () =>
-            widget.onClick != null ? widget.onClick!(widget.date) : null,
       ),
     );
   }

@@ -63,6 +63,7 @@ class HeatMapColumn extends StatelessWidget {
   ///
   /// Paratmeter gives clicked [DateTime] value.
   final Function(DateTime)? onClick;
+  final Function() onDoubleClick;
 
   /// The integer value of the maximum value for the highest value of the month.
   final int? maxValue;
@@ -98,6 +99,7 @@ class HeatMapColumn extends StatelessWidget {
     this.selectedDateTime,
     this.showText,
     required this.habit,
+    required this.onDoubleClick,
   }) : // Init list.
        dayContainers = List.generate(
          numDays,
@@ -110,6 +112,7 @@ class HeatMapColumn extends StatelessWidget {
            borderRadius: borderRadius,
            margin: margin,
            onClick: onClick,
+           onDoubleClick: onDoubleClick,
            showText: showText,
            // If datasets has DateTime key which is equal to this HeatMapContainer's date,
            // we have to color the matched HeatMapContainer.

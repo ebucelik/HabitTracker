@@ -47,13 +47,8 @@ const HabitSchema = CollectionSchema(
       name: r'showNote',
       type: IsarType.bool,
     ),
-    r'streak': PropertySchema(
-      id: 6,
-      name: r'streak',
-      type: IsarType.long,
-    ),
     r'timestamps': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'timestamps',
       type: IsarType.objectList,
       target: r'TimestampWithNote',
@@ -108,9 +103,8 @@ void _habitSerialize(
   writer.writeString(offsets[3], object.emoji);
   writer.writeString(offsets[4], object.name);
   writer.writeBool(offsets[5], object.showNote);
-  writer.writeLong(offsets[6], object.streak);
   writer.writeObjectList<TimestampWithNote>(
-    offsets[7],
+    offsets[6],
     allOffsets,
     TimestampWithNoteSchema.serialize,
     object.timestamps,
@@ -128,11 +122,10 @@ Habit _habitDeserialize(
     reader.readString(offsets[2]),
     reader.readString(offsets[3]),
     reader.readString(offsets[1]),
-    reader.readLong(offsets[6]),
     reader.readString(offsets[0]),
     reader.readBool(offsets[5]),
     reader.readObjectList<TimestampWithNote>(
-          offsets[7],
+          offsets[6],
           TimestampWithNoteSchema.deserialize,
           allOffsets,
           TimestampWithNote(),
@@ -163,8 +156,6 @@ P _habitDeserializeProp<P>(
     case 5:
       return (reader.readBool(offset)) as P;
     case 6:
-      return (reader.readLong(offset)) as P;
-    case 7:
       return (reader.readObjectList<TimestampWithNote>(
             offset,
             TimestampWithNoteSchema.deserialize,
@@ -971,58 +962,6 @@ extension HabitQueryFilter on QueryBuilder<Habit, Habit, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> streakEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'streak',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> streakGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'streak',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> streakLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'streak',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> streakBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'streak',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<Habit, Habit, QAfterFilterCondition> timestampsLengthEqualTo(
       int length) {
     return QueryBuilder.apply(this, (query) {
@@ -1191,18 +1130,6 @@ extension HabitQuerySortBy on QueryBuilder<Habit, Habit, QSortBy> {
       return query.addSortBy(r'showNote', Sort.desc);
     });
   }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> sortByStreak() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'streak', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> sortByStreakDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'streak', Sort.desc);
-    });
-  }
 }
 
 extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
@@ -1289,18 +1216,6 @@ extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
       return query.addSortBy(r'showNote', Sort.desc);
     });
   }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> thenByStreak() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'streak', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> thenByStreakDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'streak', Sort.desc);
-    });
-  }
 }
 
 extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
@@ -1342,12 +1257,6 @@ extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
   QueryBuilder<Habit, Habit, QDistinct> distinctByShowNote() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'showNote');
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QDistinct> distinctByStreak() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'streak');
     });
   }
 }
@@ -1392,12 +1301,6 @@ extension HabitQueryProperty on QueryBuilder<Habit, Habit, QQueryProperty> {
   QueryBuilder<Habit, bool, QQueryOperations> showNoteProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'showNote');
-    });
-  }
-
-  QueryBuilder<Habit, int, QQueryOperations> streakProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'streak');
     });
   }
 

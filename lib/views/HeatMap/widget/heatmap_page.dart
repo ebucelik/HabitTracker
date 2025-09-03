@@ -73,6 +73,7 @@ class HeatMapPage extends StatelessWidget {
   ///
   /// Paratmeter gives clicked [DateTime] value.
   final Function(DateTime)? onClick;
+  final Function() onDoubleClick;
 
   final bool? showText;
 
@@ -98,6 +99,7 @@ class HeatMapPage extends StatelessWidget {
     this.isScaled,
     this.showText,
     required this.habit,
+    required this.onDoubleClick,
   }) : _dateDifferent = endDate.difference(startDate).inDays,
        maxValue = DatasetsUtil.getMaxValue(datasets),
        super(key: key);
@@ -139,6 +141,7 @@ class HeatMapPage extends StatelessWidget {
           margin: margin,
           maxValue: maxValue,
           onClick: onClick,
+          onDoubleClick: onDoubleClick,
           datasets: datasets,
           showText: showText,
           selectedDateTime: selectedDateTime,

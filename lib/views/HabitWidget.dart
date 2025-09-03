@@ -153,93 +153,62 @@ class _HabitWidgetState extends State<HabitWidget> {
     bool isScaled = Provider.of<ThemeProvider>(context, listen: false).isScaled;
     colorScheme = Theme.of(context).colorScheme;
 
-    return Stack(
-      alignment: AlignmentGeometry.bottomCenter,
-      children: [
-        AnimatedContainer(
-          key: globalKey,
-          duration: Duration(milliseconds: isScaled ? 0 : 300),
-          width: double.infinity,
-          child: CupertinoContextMenu.builder(
-            actions: [CupertinoContextMenuAction(child: Text("Ebu"))],
-            enableHapticFeedback: true,
-            builder: (context, animation) {
-              RenderBox box =
-                  globalKey.currentContext?.findRenderObject() as RenderBox;
-              final height = box.size.height;
-              final width = box.size.width;
-
-              if (animation.value < CupertinoContextMenu.animationOpensAt) {
-                return Material(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(),
-                    child: SizedBox(
-                      height: height,
-                      width: width,
-                      child: Column(children: [headerWidget(), bodyWidget()]),
-                    ),
-                  ),
-                );
-              }
-
-              return Material(
-                child: DecoratedBox(
-                  decoration: BoxDecoration(),
-                  child: SizedBox(
-                    height: height + 2,
-                    width: width - 20,
-                    child: Column(children: [headerWidget(), bodyWidget()]),
-                  ),
-                ),
-              );
-            },
+    return SafeArea(
+      child: Stack(
+        alignment: AlignmentGeometry.bottomCenter,
+        children: [
+          AnimatedContainer(
+            key: globalKey,
+            duration: Duration(milliseconds: isScaled ? 0 : 300),
+            width: double.infinity,
+            child: Column(children: [headerWidget(), bodyWidget()]),
           ),
-        ),
-        AnimatedContainer(
-          duration: Duration(milliseconds: 300),
-          width: double.infinity,
-          height: successBackgroundHeight,
-          padding: EdgeInsets.only(top: 8),
-          decoration: BoxDecoration(
-            color: successBackgroundHeight > 0
-                ? color(widget.habit.color)
-                : Colors.transparent,
-            border: Border.all(width: 2, color: colorScheme.primary),
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: successBackgroundHeight > 0
-                ? [
-                    BoxShadow(
-                      color: colorScheme.primary.withValues(alpha: 0.3),
-                      spreadRadius: 1,
-                      blurRadius: 8,
-                      offset: Offset(0, 0), // changes position of shadow
-                    ),
-                  ]
-                : [],
-          ),
-          child: Center(
-            child: Stack(
-              children: [
-                Lottie.asset(
-                  'assets/lottie/confetti.json',
-                  width: double.infinity,
-                  height: double.infinity,
-                  fit: BoxFit.fitHeight,
-                ),
-                Center(
-                  child: Lottie.asset(
-                    'assets/lottie/success.json',
-                    width: 200,
-                    height: 200,
+          AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            width: double.infinity,
+            height: successBackgroundHeight,
+            padding: EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              color: successBackgroundHeight > 0
+                  ? color(widget.habit.color)
+                  : Colors.transparent,
+              border: Border.all(width: 2, color: colorScheme.primary),
+              borderRadius: BorderRadius.circular(6),
+              boxShadow: successBackgroundHeight > 0
+                  ? [
+                      BoxShadow(
+                        color: colorScheme.primary.withValues(alpha: 0.3),
+                        spreadRadius: 1,
+                        blurRadius: 8,
+                        offset: Offset(0, 0), // changes position of shadow
+                      ),
+                    ]
+                  : [],
+            ),
+            child: Center(
+              child: Stack(
+                children: [
+                  Lottie.asset(
+                    'assets/lottie/confetti.json',
+                    width: double.infinity,
+                    height: double.infinity,
                     fit: BoxFit.fitHeight,
                   ),
-                ),
-              ],
+                  Center(
+                    child: Lottie.asset(
+                      'assets/lottie/success.json',
+                      width: 200,
+                      height: 200,
+                      fit: BoxFit.fitHeight,
+                    ),
+                  ),
+                ],
+              ),
             ),
+            onEnd: () => {resetSuccessBackgroundHeight()},
           ),
-          onEnd: () => {resetSuccessBackgroundHeight()},
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -311,79 +280,102 @@ class _HabitWidgetState extends State<HabitWidget> {
 
   Widget bodyWidget() {
     bool isScaled = Provider.of<ThemeProvider>(context, listen: false).isScaled;
+    final database = context.watch<Database>();
 
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: colorScheme.inversePrimary,
-              border: Border.all(
-                width: 1,
-                color: colorScheme.primary.withValues(alpha: 0.3),
-              ),
-              borderRadius: BorderRadius.circular(8),
-              boxShadow: [
-                BoxShadow(
-                  color: colorScheme.primary.withValues(alpha: 0.1),
-                  spreadRadius: 1,
-                  blurRadius: 1,
-                  offset: Offset(0, 0), // changes position of shadow
+    return CupertinoContextMenu(
+      enableHapticFeedback: true,
+      actions: [
+        CupertinoContextMenuAction(
+          onPressed: () {
+            database.deleteHabit(widget.habit.id);
+            Navigator.pop(context);
+          },
+          isDestructiveAction: true,
+          trailingIcon: CupertinoIcons.trash,
+          child: Text("Delete"),
+        ),
+      ],
+      child: SizedBox(
+        width: MediaQuery.sizeOf(context).width - 50,
+        child: Material(
+          child: DecoratedBox(
+            decoration: BoxDecoration(),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: colorScheme.inversePrimary,
+                      border: Border.all(
+                        width: 1,
+                        color: colorScheme.primary.withValues(alpha: 0.3),
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      boxShadow: [
+                        BoxShadow(
+                          color: colorScheme.primary.withValues(alpha: 0.1),
+                          spreadRadius: 1,
+                          blurRadius: 1,
+                          offset: Offset(0, 0), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.fromLTRB(
+                      8,
+                      isScaled ? 0 : 8,
+                      8,
+                      isScaled ? 0 : 8,
+                    ),
+                    child: HabitHeatMap(
+                      habit: widget.habit,
+                      isScaled: isScaled,
+                      onDateTimeSelected: (selectedDateTime) => setState(() {
+                        vibrateOnDatetimeSelect();
+
+                        showNotesContainer = false;
+                        selectedDate = selectedDateTime;
+                        timestampWithNote = widget.habit.findTrackedTimestamp(
+                          selectedDateTime,
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+                AnimatedContainer(
+                  margin: showNotesContainer
+                      ? EdgeInsets.symmetric(horizontal: 4)
+                      : null,
+                  padding: showNotesContainer ? EdgeInsets.all(4) : null,
+                  duration: Duration(milliseconds: 200),
+                  width: showNotesContainer ? 100 : 0,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: showNotes
+                        ? [
+                            Text(
+                              getSelectedDate(),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              getTimestampNote(timestampWithNote),
+                              style: TextStyle(fontSize: 10),
+                            ),
+                          ]
+                        : [],
+                  ),
+                  onEnd: () => setState(() {
+                    showNotes = showNotesContainer;
+                  }),
                 ),
               ],
             ),
-            padding: EdgeInsets.fromLTRB(
-              8,
-              isScaled ? 0 : 8,
-              8,
-              isScaled ? 0 : 8,
-            ),
-            child: HabitHeatMap(
-              habit: widget.habit,
-              isScaled: isScaled,
-              onDateTimeSelected: (selectedDateTime) => setState(() {
-                vibrateOnDatetimeSelect();
-
-                showNotesContainer = false;
-                selectedDate = selectedDateTime;
-                timestampWithNote = widget.habit.findTrackedTimestamp(
-                  selectedDateTime,
-                );
-              }),
-            ),
           ),
         ),
-        AnimatedContainer(
-          margin: showNotesContainer
-              ? EdgeInsets.symmetric(horizontal: 4)
-              : null,
-          padding: showNotesContainer ? EdgeInsets.all(4) : null,
-          duration: Duration(milliseconds: 200),
-          width: showNotesContainer ? 100 : 0,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: showNotes
-                ? [
-                    Text(
-                      getSelectedDate(),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    Text(
-                      getTimestampNote(timestampWithNote),
-                      style: TextStyle(fontSize: 10),
-                    ),
-                  ]
-                : [],
-          ),
-          onEnd: () => setState(() {
-            showNotes = showNotesContainer;
-          }),
-        ),
-      ],
+      ),
     );
   }
 }

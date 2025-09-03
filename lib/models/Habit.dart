@@ -13,7 +13,6 @@ class Habit {
   String name;
   String emoji;
   String color;
-  int streak;
   String category;
   bool showNote;
   List<TimestampWithNote> timestamps = List.empty(growable: true);
@@ -23,7 +22,6 @@ class Habit {
     this.description,
     this.emoji,
     this.color,
-    this.streak,
     this.category,
     this.showNote,
     this.timestamps,
@@ -65,7 +63,6 @@ class Habit {
     "",
     "",
     "",
-    0,
     "",
     false,
     List.of([], growable: true),
@@ -77,7 +74,6 @@ class Habit {
       "2 hours of pure work.",
       UnicodeEmojis.allEmojis.first.emoji,
       Colors.blue.toARGB32().toRadixString(16),
-      0,
       HabitCategory.work.value,
       false,
       List.of([
@@ -89,7 +85,6 @@ class Habit {
       "Go 5 times a week",
       UnicodeEmojis.allEmojis.first.emoji,
       Colors.red.toARGB32().toRadixString(16),
-      4,
       HabitCategory.fitness.value,
       false,
       List.of([
@@ -104,7 +99,6 @@ class Habit {
       "Don't eat sugar!",
       UnicodeEmojis.allEmojis.first.emoji,
       Colors.orange.toARGB32().toRadixString(16),
-      2,
       HabitCategory.nutrition.value,
       false,
       List.of([

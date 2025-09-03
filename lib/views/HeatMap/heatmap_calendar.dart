@@ -63,6 +63,7 @@ class HeatMapCalendar extends StatefulWidget {
   ///
   /// Paratmeter gives clicked [DateTime] value.
   final Function(DateTime)? onClick;
+  final Function() onDoubleClick;
 
   /// Function that will be called when month is changed.
   ///
@@ -109,6 +110,7 @@ class HeatMapCalendar extends StatefulWidget {
     this.colorTipHelper,
     this.colorTipCount,
     this.colorTipSize,
+    required this.onDoubleClick,
   }) : super(key: key);
 
   @override
@@ -222,6 +224,7 @@ class _HeatMapCalendar extends State<HeatMapCalendar> {
             colorsets: widget.colorsets,
             borderRadius: widget.borderRadius,
             onClick: widget.onClick,
+            onDoubleClick: widget.onDoubleClick,
           ),
           if (widget.showColorTip == true)
             HeatMapColorTip(

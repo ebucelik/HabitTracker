@@ -53,6 +53,7 @@ class HeatMap extends StatefulWidget {
   ///
   /// Parameter gives clicked [DateTime] value.
   final Function(DateTime)? onClick;
+  final Function() onDoubleClick;
 
   /// The margin value for every block.
   final EdgeInsets? margin;
@@ -115,6 +116,7 @@ class HeatMap extends StatefulWidget {
     this.isScaled,
     required this.habit,
     this.colorTipSize,
+    required this.onDoubleClick,
   }) : super(key: key);
 
   @override
@@ -154,6 +156,7 @@ class _HeatMap extends State<HeatMap> {
             colorsets: widget.colorsets,
             borderRadius: widget.borderRadius,
             onClick: widget.onClick,
+            onDoubleClick: widget.onDoubleClick,
             margin: widget.margin,
             showText: widget.showText,
             selectedDateTime: widget.selectedDateTime,

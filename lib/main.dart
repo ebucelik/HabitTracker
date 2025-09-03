@@ -66,36 +66,38 @@ class _MainAppState extends State<MainApp> {
       theme: Provider.of<ThemeProvider>(context).themeData,
       home: isLaunchedInitially
           ? LaunchScreenWidget()
-          : DefaultTabController(
-              length: 3,
-              child: Scaffold(
-                extendBody: true,
-                body: tabWidgets.elementAt(selectedIndex),
-                bottomNavigationBar: BottomNavigationBar(
-                  showSelectedLabels: false,
-                  showUnselectedLabels: false,
-                  type: BottomNavigationBarType.fixed,
-                  selectedItemColor: Theme.of(context).colorScheme.primary,
-                  unselectedItemColor: AppColors.secondary.color(),
-                  items: [
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.home_filled),
-                      label: "Home",
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.link_sharp),
-                      label: "Habit",
-                    ),
-                    BottomNavigationBarItem(
-                      icon: Icon(Icons.person),
-                      label: "Account",
-                    ),
-                  ],
-                  currentIndex: selectedIndex,
-                  onTap: onTabItemTapped,
-                ),
-              ),
-            ),
+          : Scaffold(extendBody: true, body: HomeWidget()),
     );
   }
 }
+
+// DefaultTabController(
+//               length: 3,
+//               child: Scaffold(
+//                 extendBody: true,
+//                 body: tabWidgets.elementAt(selectedIndex),
+//                 bottomNavigationBar: BottomNavigationBar(
+//                   showSelectedLabels: false,
+//                   showUnselectedLabels: false,
+//                   type: BottomNavigationBarType.fixed,
+//                   selectedItemColor: Theme.of(context).colorScheme.primary,
+//                   unselectedItemColor: AppColors.secondary.color(),
+//                   items: [
+//                     BottomNavigationBarItem(
+//                       icon: Icon(Icons.home_filled),
+//                       label: "Home",
+//                     ),
+//                     BottomNavigationBarItem(
+//                       icon: Icon(Icons.link_sharp),
+//                       label: "Habit",
+//                     ),
+//                     BottomNavigationBarItem(
+//                       icon: Icon(Icons.person),
+//                       label: "Account",
+//                     ),
+//                   ],
+//                   currentIndex: selectedIndex,
+//                   onTap: onTabItemTapped,
+//                 ),
+//               ),
+//             ),
