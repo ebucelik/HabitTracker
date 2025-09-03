@@ -1,7 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/cores/Database.dart';
+import 'package:habit_tracker/extensions/ColorExtensions.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
@@ -24,18 +27,11 @@ class HabitWidget extends StatefulWidget {
 }
 
 class _HabitWidgetState extends State<HabitWidget> {
-  bool trackButtonIsPressed = false;
-  bool isLoopActive = false;
-  int counter = 0;
-  double widthToReach = 0;
-  double trackButtonBackgroundWidth = 0;
   double successBackgroundHeight = 0;
   DateTime selectedDate = DateTime.now();
   bool showNotesContainer = false;
   bool showNotes = false;
   TimestampWithNote? timestampWithNote;
-  bool didTapOnTrack = false;
-  Timer timer = Timer(Duration.zero, () => {});
   ColorScheme colorScheme = lightMode.colorScheme;
 
   @override
@@ -47,64 +43,36 @@ class _HabitWidgetState extends State<HabitWidget> {
     timestampWithNote = widget.habit.findTrackedTimestamp(selectedDate);
   }
 
-  @override
-  void dispose() {
-    timer.cancel();
-    super.dispose();
-  }
-
-  void increaseCounterWhileTrackButtonIsPressed(BuildContext context) async {
-    trackButtonIsPressed = true;
-
-    if (isLoopActive || isSelectedTimestampTracked()) return;
-
-    isLoopActive = true;
-
-    while (trackButtonIsPressed) {
+  void trackHabit(BuildContext context) async {
+    if (isSelectedTimestampTracked()) {
+      removeHabit();
+    } else {
       if (mounted) {
         setState(() {
-          trackButtonBackgroundWidth += widthToReach + 1;
+          RenderBox box =
+              globalKey.currentContext!.findRenderObject() as RenderBox;
+          successBackgroundHeight = box.size.height;
+
+          final timestamps = widget.habit.timestamps.toList();
+          timestamps.add(TimestampWithNote(timestamp: selectedDate));
+
+          widget.habit.timestamps = timestamps;
+
+          final database = Provider.of<Database>(context, listen: false);
+          database.addHabit(widget.habit);
         });
-      }
 
-      final canVibrate = await Haptics.canVibrate();
-
-      if (canVibrate) {
-        await Haptics.vibrate(HapticsType.success);
-      }
-
-      await Future.delayed(Duration(milliseconds: 800));
-
-      if (trackButtonBackgroundWidth >= widthToReach) {
-        if (mounted) {
-          setState(() {
-            isLoopActive = false;
-            trackButtonIsPressed = false;
-            counter = 0;
-            RenderBox box =
-                globalKey.currentContext!.findRenderObject() as RenderBox;
-            successBackgroundHeight = box.size.height;
-            final timestamps = widget.habit.timestamps.toList();
-            timestamps.add(TimestampWithNote(timestamp: selectedDate));
-
-            widget.habit.timestamps = timestamps;
-
-            final database = Provider.of<Database>(context, listen: false);
-            database.addHabit(widget.habit);
-          });
-        }
+        final canVibrate = await Haptics.canVibrate();
 
         if (canVibrate) {
           await Haptics.vibrate(HapticsType.warning);
         }
       }
     }
-
-    isLoopActive = false;
   }
 
   void resetSuccessBackgroundHeight() async {
-    await Future.delayed(Duration(milliseconds: 3000));
+    await Future.delayed(Duration(milliseconds: 2000));
 
     if (mounted) {
       setState(() {
@@ -113,34 +81,11 @@ class _HabitWidgetState extends State<HabitWidget> {
     }
   }
 
-  void resetTrackButton() async {
-    if (mounted) {
-      setState(() {
-        trackButtonIsPressed = false;
-        counter = 0;
-        trackButtonBackgroundWidth = 0;
-        didTapOnTrack = false;
-      });
-
-      timer.cancel();
-    }
-  }
-
-  void setDidTapOnTrack() {
-    if (mounted) {
-      setState(() {
-        didTapOnTrack = true;
-      });
-    }
-
-    timer = Timer(Duration(milliseconds: 3000), () => resetTrackButton());
-  }
-
   bool isSelectedTimestampTracked() {
     return widget.habit.isSelectedTimestampTracked(selectedDate);
   }
 
-  void onTrackButtonPressed() async {
+  void removeHabit() async {
     final canVibrate = await Haptics.canVibrate();
 
     if (canVibrate) {
@@ -149,14 +94,19 @@ class _HabitWidgetState extends State<HabitWidget> {
 
     if (mounted) {
       setState(() {
-        trackButtonBackgroundWidth = 0;
+        final timestamps = widget.habit.timestamps.toList();
 
-        widget.habit.timestamps.removeWhere(
+        timestamps.removeWhere(
           (timestamp) =>
               timestamp.timestamp?.day == selectedDate.day &&
               timestamp.timestamp?.month == selectedDate.month &&
               timestamp.timestamp?.year == selectedDate.year,
         );
+
+        widget.habit.timestamps = timestamps;
+
+        final database = Provider.of<Database>(context, listen: false);
+        database.addHabit(widget.habit);
       });
     }
   }
@@ -210,8 +160,39 @@ class _HabitWidgetState extends State<HabitWidget> {
           key: globalKey,
           duration: Duration(milliseconds: isScaled ? 0 : 300),
           width: double.infinity,
-          child: Column(
-            children: [headerWidget(), bodyWidget(), footerWidget()],
+          child: CupertinoContextMenu.builder(
+            actions: [CupertinoContextMenuAction(child: Text("Ebu"))],
+            enableHapticFeedback: true,
+            builder: (context, animation) {
+              RenderBox box =
+                  globalKey.currentContext?.findRenderObject() as RenderBox;
+              final height = box.size.height;
+              final width = box.size.width;
+
+              if (animation.value < CupertinoContextMenu.animationOpensAt) {
+                return Material(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(),
+                    child: SizedBox(
+                      height: height,
+                      width: width,
+                      child: Column(children: [headerWidget(), bodyWidget()]),
+                    ),
+                  ),
+                );
+              }
+
+              return Material(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(),
+                  child: SizedBox(
+                    height: height + 2,
+                    width: width - 20,
+                    child: Column(children: [headerWidget(), bodyWidget()]),
+                  ),
+                ),
+              );
+            },
           ),
         ),
         AnimatedContainer(
@@ -264,7 +245,7 @@ class _HabitWidgetState extends State<HabitWidget> {
 
   Widget headerWidget() {
     return Container(
-      padding: EdgeInsets.fromLTRB(8, 0, 8, 4),
+      padding: EdgeInsets.fromLTRB(8, 0, 0, 4),
       child: Row(
         spacing: 8,
         children: [
@@ -272,7 +253,7 @@ class _HabitWidgetState extends State<HabitWidget> {
             UnicodeEmojis.allEmojis
                 .firstWhere((emoji) => emoji.unified == widget.habit.emoji)
                 .emoji,
-            style: TextStyle(fontSize: 35),
+            style: TextStyle(fontSize: 25),
           ),
           Expanded(
             child: Column(
@@ -280,23 +261,49 @@ class _HabitWidgetState extends State<HabitWidget> {
               children: [
                 Text(
                   widget.habit.name,
-                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14),
                 ),
                 Text(
                   widget.habit.description,
-                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 12),
+                  style: TextStyle(fontWeight: FontWeight.normal, fontSize: 10),
                 ),
               ],
             ),
           ),
-          Text("🔥", style: TextStyle(fontSize: 30)),
-          Container(
-            margin: EdgeInsets.only(right: 8),
-            child: Text(
-              widget.habit.streak.toString(),
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 30),
+          GestureDetector(
+            onTap: () => trackHabit(context),
+            child: Container(
+              padding: EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: widget.habit.color.toColor().withValues(
+                  alpha: isSelectedTimestampTracked() ? 1 : 0.5,
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Icon(
+                size: 18,
+                CupertinoIcons.check_mark,
+                color: colorScheme.primary.withValues(
+                  alpha: isSelectedTimestampTracked() ? 1 : 0.5,
+                ),
+              ),
             ),
           ),
+          isSelectedTimestampTracked() && isTimestampNoteAvailable()
+              ? IconButton(
+                  onPressed: () => {
+                    setState(() {
+                      showNotesContainer = !showNotesContainer;
+                      showNotes = !showNotesContainer ? false : showNotes;
+                    }),
+                  },
+                  icon: Icon(
+                    CupertinoIcons.info,
+                    size: 25,
+                    color: colorScheme.secondary,
+                  ),
+                )
+              : Container(),
         ],
       ),
     );
@@ -377,122 +384,6 @@ class _HabitWidgetState extends State<HabitWidget> {
           }),
         ),
       ],
-    );
-  }
-
-  Widget footerWidget() {
-    return Listener(
-      onPointerUp: (_) => resetTrackButton(),
-      onPointerCancel: (_) => resetTrackButton(),
-      child: InkWell(
-        onTap: () => setDidTapOnTrack(),
-        onLongPress: () => increaseCounterWhileTrackButtonIsPressed(context),
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            widthToReach = constraints.widthConstraints().maxWidth;
-
-            return isSelectedTimestampTracked()
-                ? GestureDetector(
-                    child: trackButtonWidget(),
-                    onTap: () => {onTrackButtonPressed()},
-                  )
-                : trackButtonWidget();
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget trackButtonWidget() {
-    return Container(
-      margin: EdgeInsets.only(top: 8),
-      height: 50,
-      child: Row(
-        children: [
-          Expanded(
-            child: Stack(
-              children: [
-                AnimatedContainer(
-                  duration: Duration(milliseconds: 800),
-                  alignment: AlignmentGeometry.center,
-                  height: double.infinity,
-                  width: isSelectedTimestampTracked()
-                      ? widthToReach
-                      : trackButtonBackgroundWidth,
-                  decoration: BoxDecoration(
-                    color: color(widget.habit.color),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                ),
-                Container(
-                  alignment: AlignmentGeometry.center,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
-                    color: color(widget.habit.color).withAlpha(150),
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorScheme.primary.withValues(alpha: 0.1),
-                        spreadRadius: 1,
-                        blurRadius: 4,
-                        offset: Offset(0, 0), // changes position of shadow
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: isSelectedTimestampTracked()
-                        ? Icon(
-                            Icons.check_circle_outline,
-                            size: 30,
-                            color: AppColors.primary.color(),
-                          )
-                        : Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.check,
-                                size: didTapOnTrack ? 20 : 30,
-                                color: AppColors.primary.color(),
-                              ),
-                              didTapOnTrack
-                                  ? Text(
-                                      "Hold to track",
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.primary.color(),
-                                      ),
-                                    )
-                                  : Container(),
-                            ],
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          isSelectedTimestampTracked() && isTimestampNoteAvailable()
-              ? Container(
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Center(
-                    child: IconButton(
-                      onPressed: () => {
-                        setState(() {
-                          showNotesContainer = !showNotesContainer;
-                          showNotes = !showNotesContainer ? false : showNotes;
-                        }),
-                      },
-                      icon: Icon(
-                        Icons.info_rounded,
-                        size: 30,
-                        color: colorScheme.secondary,
-                      ),
-                    ),
-                  ),
-                )
-              : Container(),
-        ],
-      ),
     );
   }
 }

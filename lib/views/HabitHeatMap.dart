@@ -25,10 +25,7 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-
     return HeatMap(
-      endDate: now.add(Duration(days: 6 - now.weekday)),
       colorsets: {1: color(widget.habit.color)},
       colorMode: ColorMode.color,
       fontSize: widget.isScaled ? 10 : 6,

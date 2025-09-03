@@ -47,6 +47,9 @@ class HomeWidgetState extends State<HomeWidget> {
     super.dispose();
   }
 
+  var width = 0.0;
+  var height = 0.0;
+
   @override
   Widget build(BuildContext context) {
     final database = context.watch<Database>();
@@ -74,7 +77,6 @@ class HomeWidgetState extends State<HomeWidget> {
       ),
       child: Center(
         child: ListView(
-          shrinkWrap: false,
           children:
               <Widget>[
                 Row(
@@ -139,33 +141,13 @@ class HomeWidgetState extends State<HomeWidget> {
               ] +
               habits
                   .map(
-                    (habit) => Dismissible(
-                      direction: DismissDirection.endToStart,
-                      key: Key(habit.id.toString()),
-                      background: Container(
-                        padding: EdgeInsets.only(right: 16),
-                        decoration: BoxDecoration(color: Colors.red.shade600),
-                        child: Align(
-                          alignment: AlignmentGeometry.centerRight,
-                          child: Text(
-                            "Delete",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
+                    (habit) => Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8),
+                      margin: EdgeInsetsGeometry.symmetric(
+                        horizontal: 8,
+                        vertical: 16,
                       ),
-                      onDismissed: (direction) {
-                        database.deleteHabit(habit.id);
-                      },
-                      child: Padding(
-                        padding: EdgeInsetsGeometry.symmetric(
-                          horizontal: 8,
-                          vertical: 16,
-                        ),
-                        child: HabitWidget(habit: habit),
-                      ),
+                      child: HabitWidget(habit: habit),
                     ),
                   )
                   .toList(),

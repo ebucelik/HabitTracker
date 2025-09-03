@@ -18,26 +18,26 @@ class CreateHabitWidget extends StatefulWidget {
 class _CreateHabitWidgetState extends State<CreateHabitWidget> {
   Emoji selectedEmoji = UnicodeEmojis.search("smile").first;
   List<Color> colors = List.of([
-    Colors.indigo,
-    Colors.indigoAccent,
+    // Colors.indigo,
+    // Colors.indigoAccent,
     Colors.blue,
-    Colors.lightBlue,
+    // Colors.lightBlue,
     Colors.cyan,
-    Colors.greenAccent,
+    // Colors.greenAccent,
     Colors.green,
-    Colors.lightGreen,
-    Colors.lightGreenAccent,
-    Colors.lime,
-    Colors.yellow,
-    Colors.amberAccent,
+    // Colors.lightGreen,
+    // Colors.lightGreenAccent,
+    // Colors.lime,
+    // Colors.yellow,
+    // Colors.amberAccent,
     Colors.amber,
     Colors.orange,
-    Colors.deepOrange,
+    // Colors.deepOrange,
     Colors.red,
-    Colors.redAccent,
-    Colors.pinkAccent,
-    Colors.pink,
-    Colors.purpleAccent,
+    // Colors.redAccent,
+    // Colors.pinkAccent,
+    // Colors.pink,
+    // Colors.purpleAccent,
     Colors.purple,
   ]);
   Color selectedColor = Colors.blue;
@@ -45,8 +45,8 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
   Habit habit = Habit(
     "",
     "",
-    "",
-    "",
+    UnicodeEmojis.search("smile").first.unified,
+    Colors.blue.toARGB32().toRadixString(16),
     0,
     "",
     false,
@@ -165,7 +165,11 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
                             ),
                             border: OutlineInputBorder(),
                           ),
-                          onChanged: (value) => {habit.name = value},
+                          onChanged: (value) => {
+                            setState(() {
+                              habit.name = value;
+                            }),
+                          },
                         ),
                         TextField(
                           decoration: InputDecoration(
@@ -179,7 +183,11 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
                             ),
                             border: OutlineInputBorder(),
                           ),
-                          onChanged: (value) => {habit.description = value},
+                          onChanged: (value) => {
+                            setState(() {
+                              habit.description = value;
+                            }),
+                          },
                         ),
                         GridView.count(
                           shrinkWrap: true,
@@ -234,8 +242,9 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
               ),
             ),
             TextButton(
-              onPressed: () => {
-                database.addHabit(habit),
+              onPressed: () async => {
+                await database.addHabit(habit),
+
                 Navigator.pop(context),
               },
               child: Container(
