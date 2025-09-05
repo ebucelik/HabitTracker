@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:habit_tracker/AppData.dart';
+import 'package:habit_tracker/constant.dart';
 import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/themes/dark_mode.dart';
@@ -10,6 +13,7 @@ import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/CreateHabitWidget.dart';
 import 'package:habit_tracker/views/HabitWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
 class HomeWidget extends StatefulWidget {
@@ -25,8 +29,38 @@ class HomeWidgetState extends State<HomeWidget> {
   StreamSubscription? habitStream;
 
   void presentPaywall() async {
-    final paywallResult = await RevenueCatUI.presentPaywall();
-    print(paywallResult);
+    CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+
+    if (customerInfo.entitlements.all[entitlementID] != null &&
+        customerInfo.entitlements.all[entitlementID]?.isActive == true) {
+      AppData.instance.isEntitled = true;
+    } else {
+      Offerings? offerings;
+
+      try {
+        offerings = await Purchases.getOfferings();
+      } on PlatformException catch (exception) {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) =>
+              Text("Something went wrong: ${exception.message}"),
+        );
+      }
+
+      if (offerings == null || offerings.current == null) {
+      } else {
+        final paywallResult = await RevenueCatUI.presentPaywall(
+          offering: offerings.current,
+        );
+
+        if (paywallResult == PaywallResult.purchased ||
+            paywallResult == PaywallResult.restored) {
+          AppData.instance.isEntitled = true;
+        } else {
+          AppData.instance.isEntitled = false;
+        }
+      }
+    }
   }
 
   Future<void> _getHabits() async {
