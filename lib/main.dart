@@ -1,17 +1,21 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/constant.dart';
 import 'package:habit_tracker/cores/Database.dart';
-import 'package:habit_tracker/shared/AppColors.dart';
 import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/LaunchScreenWidget.dart';
 import 'package:habit_tracker/views/HomeWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Database.initialize();
+
+  await initPlatformState();
 
   runApp(
     MultiProvider(
@@ -35,11 +39,7 @@ class _MainAppState extends State<MainApp> {
   bool isLaunchedInitially = true;
   int selectedIndex = 0;
 
-  final List<Widget> tabWidgets = [
-    HomeWidget(),
-    Text("Habit Entry"),
-    Text("Account"),
-  ];
+  final List<Widget> tabWidgets = [HomeWidget()];
 
   void onTabItemTapped(int currentIndex) {
     setState(() {
@@ -68,6 +68,21 @@ class _MainAppState extends State<MainApp> {
           ? LaunchScreenWidget()
           : Scaffold(extendBody: true, body: HomeWidget()),
     );
+  }
+}
+
+Future<void> initPlatformState() async {
+  await Purchases.setLogLevel(LogLevel.debug);
+
+  PurchasesConfiguration? configuration;
+  if (Platform.isAndroid) {
+    configuration = PurchasesConfiguration(googleAPIKey);
+  } else if (Platform.isIOS) {
+    configuration = PurchasesConfiguration(appleAPIKey);
+  }
+
+  if (configuration != null) {
+    await Purchases.configure(configuration);
   }
 }
 

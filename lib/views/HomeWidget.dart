@@ -9,6 +9,7 @@ import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/CreateHabitWidget.dart';
 import 'package:habit_tracker/views/HabitWidget.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
@@ -21,6 +22,11 @@ class HomeWidgetState extends State<HomeWidget> {
   List<Habit> habits = List.of([], growable: true);
 
   StreamSubscription? habitStream;
+
+  void presentPaywall() async {
+    final paywallResult = await RevenueCatUI.presentPaywall();
+    print(paywallResult);
+  }
 
   Future<void> _getHabits() async {
     habitStream = Database.isar.habits
@@ -52,89 +58,122 @@ class HomeWidgetState extends State<HomeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
+    return Scaffold(
+      appBar: AppBar(
         backgroundColor: Theme.of(
           context,
         ).colorScheme.surface.withValues(alpha: 0.8),
-        middle: ClipRRect(
-          borderRadius: BorderRadius.circular(8),
-          child: Image.asset("assets/images/HabitTrackerLogo.png"),
-        ),
-        trailing: IconButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              CupertinoPageRoute<void>(
-                builder: (context) => const CreateHabitWidget(),
+        title: Row(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.asset(
+                "assets/images/HabitTrackerLogo.png",
+                height: 25,
+                width: 25,
               ),
-            );
-          },
-          icon: Icon(Icons.add_circle_outline_rounded),
+            ),
+            Text("ABIT", style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              " TRACKER",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Theme.of(context).colorScheme.secondary,
+              ),
+            ),
+          ],
         ),
+        actions: [
+          Container(
+            height: 30,
+            padding: EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(6),
+              border: Border.all(color: Theme.of(context).colorScheme.primary),
+            ),
+            child: GestureDetector(
+              onTap: () => presentPaywall(),
+              child: Text("PRO", style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                CupertinoPageRoute<void>(
+                  builder: (context) => const CreateHabitWidget(),
+                ),
+              );
+            },
+            icon: Icon(Icons.add_circle_outline_rounded, size: 30),
+          ),
+        ],
       ),
-      child: Center(
+      body: Center(
         child: ListView(
           children:
               <Widget>[
-                Row(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(right: 6, left: 12),
-                      height: 35,
-                      width: 70,
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withAlpha(15),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(),
-                      ),
-                      child: TextButton(
-                        onPressed: () => setState(() {
-                          Provider.of<ThemeProvider>(
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    spacing: 8,
+                    children: [
+                      Container(
+                        height: 35,
+                        width: 70,
+                        decoration: BoxDecoration(
+                          color: Theme.of(
                             context,
-                            listen: false,
-                          ).toggleTheme();
-                        }),
-                        child: Icon(
-                          Theme.of(context) == darkMode
-                              ? Icons.light_mode_rounded
-                              : Icons.dark_mode_rounded,
-                          size: 18,
+                          ).colorScheme.primary.withAlpha(15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(),
+                        ),
+                        child: TextButton(
+                          onPressed: () => setState(() {
+                            Provider.of<ThemeProvider>(
+                              context,
+                              listen: false,
+                            ).toggleTheme();
+                          }),
+                          child: Icon(
+                            Theme.of(context) == darkMode
+                                ? Icons.light_mode_rounded
+                                : Icons.dark_mode_rounded,
+                            size: 18,
+                          ),
                         ),
                       ),
-                    ),
-                    Container(
-                      height: 35,
-                      width: 70,
-                      decoration: BoxDecoration(
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.primary.withAlpha(15),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(),
-                      ),
-                      child: TextButton(
-                        onPressed: () => setState(() {
-                          Provider.of<ThemeProvider>(
+                      Container(
+                        height: 35,
+                        width: 70,
+                        decoration: BoxDecoration(
+                          color: Theme.of(
                             context,
-                            listen: false,
-                          ).toggleIsScaled();
-                        }),
-                        child: Icon(
-                          Provider.of<ThemeProvider>(
-                                context,
-                                listen: false,
-                              ).isScaled
-                              ? Icons.zoom_in_map_rounded
-                              : Icons.zoom_out_map_rounded,
-                          size: 18,
+                          ).colorScheme.primary.withAlpha(15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(),
+                        ),
+                        child: TextButton(
+                          onPressed: () => setState(() {
+                            Provider.of<ThemeProvider>(
+                              context,
+                              listen: false,
+                            ).toggleIsScaled();
+                          }),
+                          child: Icon(
+                            Provider.of<ThemeProvider>(
+                                  context,
+                                  listen: false,
+                                ).isScaled
+                                ? Icons.zoom_in_map_rounded
+                                : Icons.zoom_out_map_rounded,
+                            size: 18,
+                          ),
                         ),
                       ),
-                    ),
-                    Expanded(child: Container()),
-                  ],
+                      Expanded(child: Container()),
+                    ],
+                  ),
                 ),
               ] +
               habits

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
 
 ThemeData darkMode = ThemeData(
+  fontFamily: 'MonaSans',
   colorScheme: ColorScheme.dark(
     surface: AppColors.surfaceDark.color(),
     primary: AppColors.primary.color(),

@@ -7,6 +7,20 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - purchases_flutter (9.4.0):
+    - Flutter
+    - PurchasesHybridCommon (= 17.3.0)
+  - purchases_ui_flutter (9.4.0):
+    - Flutter
+    - PurchasesHybridCommonUI (= 17.3.0)
+  - PurchasesHybridCommon (17.3.0):
+    - RevenueCat (= 5.36.0)
+  - PurchasesHybridCommonUI (17.3.0):
+    - PurchasesHybridCommon (= 17.3.0)
+    - RevenueCatUI (= 5.36.0)
+  - RevenueCat (5.36.0)
+  - RevenueCatUI (5.36.0):
+    - RevenueCat (= 5.36.0)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -16,7 +30,16 @@ DEPENDENCIES:
   - haptic_feedback (from `.symlinks/plugins/haptic_feedback/ios`)
   - isar_flutter_libs (from `.symlinks/plugins/isar_flutter_libs/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
+  - purchases_flutter (from `.symlinks/plugins/purchases_flutter/ios`)
+  - purchases_ui_flutter (from `.symlinks/plugins/purchases_ui_flutter/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
+
+SPEC REPOS:
+  trunk:
+    - PurchasesHybridCommon
+    - PurchasesHybridCommonUI
+    - RevenueCat
+    - RevenueCatUI
 
 EXTERNAL SOURCES:
   Flutter:
@@ -27,6 +50,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/isar_flutter_libs/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
+  purchases_flutter:
+    :path: ".symlinks/plugins/purchases_flutter/ios"
+  purchases_ui_flutter:
+    :path: ".symlinks/plugins/purchases_ui_flutter/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
 
@@ -35,6 +62,12 @@ SPEC CHECKSUMS:
   haptic_feedback: fd1d8509833f58f164fc12122c0357fa9b2750e0
   isar_flutter_libs: 9fc2cfb928c539e1b76c481ba5d143d556d94920
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  purchases_flutter: 48308b65afcea467515b3bba2c686b3cf4c6aac4
+  purchases_ui_flutter: b9e3046d5dfe03af4cd620403f76927039f37d6b
+  PurchasesHybridCommon: 61759dbf7a02b085e4904d8def867d6a89252cb0
+  PurchasesHybridCommonUI: 7247559e065f074856efc201099e3e69f46fc33a
+  RevenueCat: 1b6e3f4582356a549048dac2cd21410cad67d51b
+  RevenueCatUI: ad521e495d6b7be1b16ee444a3bdeac8ac271316
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
 
 PODFILE CHECKSUM: ba0d7af98d1a0db7cbf744edd0331fd4de934cd6
