@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:habit_tracker/themes/dark_mode.dart';
 import 'package:habit_tracker/themes/light_mode.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -25,9 +26,17 @@ class ThemeProvider extends ChangeNotifier {
   Future<void> sharedPreferencesInit() async {
     _sharedPreferences = await SharedPreferences.getInstance();
 
-    themeData = _sharedPreferences?.getBool(isDarkKey) == true
-        ? darkMode
-        : lightMode;
+    if (_sharedPreferences?.getBool(isDarkKey) != null) {
+      themeData = _sharedPreferences?.getBool(isDarkKey) == true
+          ? darkMode
+          : lightMode;
+    } else {
+      var brightness =
+          SchedulerBinding.instance.platformDispatcher.platformBrightness;
+      bool isDarkMode = brightness == Brightness.dark;
+
+      themeData = isDarkMode ? darkMode : lightMode;
+    }
 
     isScaled = _sharedPreferences?.getBool(isScaledKey) ?? false;
   }

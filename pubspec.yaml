@@ -36,6 +36,7 @@ flutter_launcher_icons:
   android: true
   remove_alpha_ios: true
   image_path: "assets/images/HabitTrackerLogo.png"
+  image_path_ios_dark_transparent: "assets/images/HabitTrackerDarkLogo.png"
 
 flutter:
   uses-material-design: true

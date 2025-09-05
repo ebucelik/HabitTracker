@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/themes/dark_mode.dart';
+import 'package:habit_tracker/themes/light_mode.dart';
 import 'package:habit_tracker/themes/theme_provider.dart';
 import 'package:habit_tracker/views/CreateHabitWidget.dart';
 import 'package:habit_tracker/views/HabitWidget.dart';
@@ -68,7 +69,9 @@ class HomeWidgetState extends State<HomeWidget> {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(
-                "assets/images/HabitTrackerLogo.png",
+                Provider.of<ThemeProvider>(context).themeData == lightMode
+                    ? "assets/images/HabitTrackerLogo.png"
+                    : "assets/images/HabitTrackerLogoLight.png",
                 height: 25,
                 width: 25,
               ),
