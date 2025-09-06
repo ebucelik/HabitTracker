@@ -88,9 +88,6 @@ class HomeWidgetState extends State<HomeWidget> {
     super.dispose();
   }
 
-  var width = 0.0;
-  var height = 0.0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -135,12 +132,16 @@ class HomeWidgetState extends State<HomeWidget> {
           ),
           IconButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute<void>(
-                  builder: (context) => const CreateHabitWidget(),
-                ),
-              );
+              if (habits.length > 2 && !AppData.instance.isEntitled) {
+                presentPaywall();
+              } else {
+                Navigator.push(
+                  context,
+                  CupertinoPageRoute<void>(
+                    builder: (context) => const CreateHabitWidget(),
+                  ),
+                );
+              }
             },
             icon: Icon(Icons.add_circle_outline_rounded, size: 30),
           ),
@@ -213,20 +214,48 @@ class HomeWidgetState extends State<HomeWidget> {
                   ),
                 ),
               ] +
-              habits
-                  .map(
-                    (habit) => Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8),
-                      margin: EdgeInsetsGeometry.symmetric(
-                        horizontal: 8,
-                        vertical: 16,
-                      ),
-                      child: HabitWidget(habit: habit),
-                    ),
-                  )
-                  .toList(),
+              habitList(),
         ),
       ),
     );
+  }
+
+  List<Widget> habitList() {
+    return habits.isEmpty
+        ? [
+            Container(
+              margin: EdgeInsets.only(
+                top: MediaQuery.sizeOf(context).height / 2 - 150,
+              ),
+              child: Column(
+                children: [
+                  Center(
+                    child: Text(
+                      "No habits available",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
+                  Center(
+                    child: Text("Track your goals by creating a new habit"),
+                  ),
+                ],
+              ),
+            ),
+          ]
+        : habits
+              .map(
+                (habit) => Container(
+                  padding: EdgeInsets.symmetric(horizontal: 8),
+                  margin: EdgeInsetsGeometry.symmetric(
+                    horizontal: 8,
+                    vertical: 16,
+                  ),
+                  child: HabitWidget(habit: habit),
+                ),
+              )
+              .toList();
   }
 }

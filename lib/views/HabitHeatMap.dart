@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:habit_tracker/AppData.dart';
+import 'package:habit_tracker/constant.dart';
 import 'package:habit_tracker/cores/Database.dart';
 import 'package:habit_tracker/models/Habit.dart';
 import 'package:habit_tracker/shared/AppColors.dart';
@@ -6,6 +9,9 @@ import 'package:habit_tracker/views/HeatMap/data/heatmap_color_mode.dart';
 import 'package:habit_tracker/views/HeatMap/heatmap.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:purchases_flutter/purchases_flutter.dart';
+import 'package:purchases_ui_flutter/paywall_result.dart';
+import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
 class HabitHeatMap extends StatefulWidget {
   const HabitHeatMap({
@@ -41,6 +47,41 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
     super.dispose();
   }
 
+  void presentPaywall() async {
+    CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+
+    if (customerInfo.entitlements.all[entitlementID] != null &&
+        customerInfo.entitlements.all[entitlementID]?.isActive == true) {
+      AppData.instance.isEntitled = true;
+    } else {
+      Offerings? offerings;
+
+      try {
+        offerings = await Purchases.getOfferings();
+      } on PlatformException catch (exception) {
+        await showDialog(
+          context: context,
+          builder: (BuildContext context) =>
+              Text("Something went wrong: ${exception.message}"),
+        );
+      }
+
+      if (offerings == null || offerings.current == null) {
+      } else {
+        final paywallResult = await RevenueCatUI.presentPaywall(
+          offering: offerings.current,
+        );
+
+        if (paywallResult == PaywallResult.purchased ||
+            paywallResult == PaywallResult.restored) {
+          AppData.instance.isEntitled = true;
+        } else {
+          AppData.instance.isEntitled = false;
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final database = context.watch<Database>();
@@ -72,10 +113,14 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
       habit: widget.habit,
       onDoubleClick: () {
         if (widget.habit.isSelectedTimestampTracked(selectedDateTime)) {
-          openDialog(
-            database,
-            widget.habit.findTrackedTimestamp(selectedDateTime)?.note,
-          );
+          if (AppData.instance.isEntitled) {
+            openDialog(
+              database,
+              widget.habit.findTrackedTimestamp(selectedDateTime)?.note,
+            );
+          } else {
+            presentPaywall();
+          }
         }
       },
     );

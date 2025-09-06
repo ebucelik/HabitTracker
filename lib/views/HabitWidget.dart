@@ -214,7 +214,7 @@ class _HabitWidgetState extends State<HabitWidget> {
 
   Widget headerWidget() {
     return Container(
-      padding: EdgeInsets.fromLTRB(8, 0, 0, 4),
+      padding: EdgeInsets.fromLTRB(8, 0, 8, 4),
       child: Row(
         spacing: 8,
         children: [
@@ -239,6 +239,21 @@ class _HabitWidgetState extends State<HabitWidget> {
               ],
             ),
           ),
+          isSelectedTimestampTracked() && isTimestampNoteAvailable()
+              ? GestureDetector(
+                  onTap: () => {
+                    setState(() {
+                      showNotesContainer = !showNotesContainer;
+                      showNotes = !showNotesContainer ? false : showNotes;
+                    }),
+                  },
+                  child: Icon(
+                    Icons.info_rounded,
+                    size: 30,
+                    color: colorScheme.secondary,
+                  ),
+                )
+              : Container(),
           GestureDetector(
             onTap: () => trackHabit(context),
             child: Container(
@@ -258,21 +273,6 @@ class _HabitWidgetState extends State<HabitWidget> {
               ),
             ),
           ),
-          isSelectedTimestampTracked() && isTimestampNoteAvailable()
-              ? IconButton(
-                  onPressed: () => {
-                    setState(() {
-                      showNotesContainer = !showNotesContainer;
-                      showNotes = !showNotesContainer ? false : showNotes;
-                    }),
-                  },
-                  icon: Icon(
-                    CupertinoIcons.info,
-                    size: 25,
-                    color: colorScheme.secondary,
-                  ),
-                )
-              : Container(),
         ],
       ),
     );
