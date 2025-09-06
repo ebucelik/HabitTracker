@@ -20,6 +20,7 @@ dependencies:
   provider: ^6.1.5+1
   purchases_flutter: ^9.4.0
   purchases_ui_flutter: ^9.4.0
+  random_date: ^0.0.7
   shared_preferences: ^2.5.3
   unicode_emojis: ^0.4.0
 

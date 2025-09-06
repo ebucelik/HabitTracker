@@ -42,13 +42,8 @@ const HabitSchema = CollectionSchema(
       name: r'name',
       type: IsarType.string,
     ),
-    r'showNote': PropertySchema(
-      id: 5,
-      name: r'showNote',
-      type: IsarType.bool,
-    ),
     r'timestamps': PropertySchema(
-      id: 6,
+      id: 5,
       name: r'timestamps',
       type: IsarType.objectList,
       target: r'TimestampWithNote',
@@ -102,9 +97,8 @@ void _habitSerialize(
   writer.writeString(offsets[2], object.description);
   writer.writeString(offsets[3], object.emoji);
   writer.writeString(offsets[4], object.name);
-  writer.writeBool(offsets[5], object.showNote);
   writer.writeObjectList<TimestampWithNote>(
-    offsets[6],
+    offsets[5],
     allOffsets,
     TimestampWithNoteSchema.serialize,
     object.timestamps,
@@ -123,9 +117,8 @@ Habit _habitDeserialize(
     reader.readString(offsets[3]),
     reader.readString(offsets[1]),
     reader.readString(offsets[0]),
-    reader.readBool(offsets[5]),
     reader.readObjectList<TimestampWithNote>(
-          offsets[6],
+          offsets[5],
           TimestampWithNoteSchema.deserialize,
           allOffsets,
           TimestampWithNote(),
@@ -154,8 +147,6 @@ P _habitDeserializeProp<P>(
     case 4:
       return (reader.readString(offset)) as P;
     case 5:
-      return (reader.readBool(offset)) as P;
-    case 6:
       return (reader.readObjectList<TimestampWithNote>(
             offset,
             TimestampWithNoteSchema.deserialize,
@@ -952,16 +943,6 @@ extension HabitQueryFilter on QueryBuilder<Habit, Habit, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Habit, Habit, QAfterFilterCondition> showNoteEqualTo(
-      bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'showNote',
-        value: value,
-      ));
-    });
-  }
-
   QueryBuilder<Habit, Habit, QAfterFilterCondition> timestampsLengthEqualTo(
       int length) {
     return QueryBuilder.apply(this, (query) {
@@ -1118,18 +1099,6 @@ extension HabitQuerySortBy on QueryBuilder<Habit, Habit, QSortBy> {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> sortByShowNote() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'showNote', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> sortByShowNoteDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'showNote', Sort.desc);
-    });
-  }
 }
 
 extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
@@ -1204,18 +1173,6 @@ extension HabitQuerySortThenBy on QueryBuilder<Habit, Habit, QSortThenBy> {
       return query.addSortBy(r'name', Sort.desc);
     });
   }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> thenByShowNote() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'showNote', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QAfterSortBy> thenByShowNoteDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'showNote', Sort.desc);
-    });
-  }
 }
 
 extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
@@ -1251,12 +1208,6 @@ extension HabitQueryWhereDistinct on QueryBuilder<Habit, Habit, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'name', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<Habit, Habit, QDistinct> distinctByShowNote() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'showNote');
     });
   }
 }
@@ -1295,12 +1246,6 @@ extension HabitQueryProperty on QueryBuilder<Habit, Habit, QQueryProperty> {
   QueryBuilder<Habit, String, QQueryOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'name');
-    });
-  }
-
-  QueryBuilder<Habit, bool, QQueryOperations> showNoteProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'showNote');
     });
   }
 

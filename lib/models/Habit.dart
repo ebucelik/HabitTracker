@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:habit_tracker/models/HabitCategory.dart';
 import 'package:habit_tracker/models/TimestampWithNote.dart';
 import 'package:isar/isar.dart';
-import 'package:unicode_emojis/unicode_emojis.dart';
+import 'package:random_date/random_date.dart';
 
 part 'Habit.g.dart';
 
@@ -14,7 +14,6 @@ class Habit {
   String emoji;
   String color;
   String category;
-  bool showNote;
   List<TimestampWithNote> timestamps = List.empty(growable: true);
 
   Habit(
@@ -23,7 +22,6 @@ class Habit {
     this.emoji,
     this.color,
     this.category,
-    this.showNote,
     this.timestamps,
   );
 
@@ -58,55 +56,60 @@ class Habit {
         emoji.isNotEmpty;
   }
 
-  static Habit empty = Habit(
-    "",
-    "",
-    "",
-    "",
-    "",
-    false,
-    List.of([], growable: true),
-  );
+  static Habit empty = Habit("", "", "", "", "", List.of([], growable: true));
 
   static List<Habit> mock = List.of([
     Habit(
-      "Work",
-      "2 hours of pure work.",
-      UnicodeEmojis.allEmojis.first.emoji,
-      Colors.blue.toARGB32().toRadixString(16),
-      HabitCategory.work.value,
-      false,
-      List.of([
-        TimestampWithNote(timestamp: DateTime.now(), note: "Ebu"),
-      ], growable: true),
-    ),
-    Habit(
       "Gym",
-      "Go 5 times a week",
-      UnicodeEmojis.allEmojis.first.emoji,
+      "Benchpress, Legpress and so on",
+      "1F4AA",
       Colors.red.toARGB32().toRadixString(16),
-      HabitCategory.fitness.value,
-      false,
-      List.of([
-        TimestampWithNote(
-          timestamp: DateTime.now().subtract(Duration(days: 100)),
-          note: "I trained triceps.",
-        ),
-      ], growable: true),
+      HabitCategory.work.value,
+      List.generate(300, (index) {
+        return TimestampWithNote(
+          timestamp: RandomDate.withRange(2025, 2025).random(),
+          note: index % 8 == 0 ? "Trained for 2 hours." : "",
+        );
+      }).toList(),
     ),
     Habit(
-      "Stop Sugar",
-      "Don't eat sugar!",
-      UnicodeEmojis.allEmojis.first.emoji,
-      Colors.orange.toARGB32().toRadixString(16),
+      "Drink Water",
+      "Drink 1-2 liters of water",
+      "1F4A7",
+      Colors.blue.toARGB32().toRadixString(16),
+      HabitCategory.fitness.value,
+      List.generate(300, (index) {
+        return TimestampWithNote(
+          timestamp: RandomDate.withRange(2025, 2025).random(),
+          note: index % 4 == 0 ? "Trained for 2 hours." : "",
+        );
+      }).toList(),
+    ),
+    Habit(
+      "Read Books",
+      "Learn to read & understand faster",
+      "1F4D9",
+      Colors.green.toARGB32().toRadixString(16),
       HabitCategory.nutrition.value,
-      false,
-      List.of([
-        TimestampWithNote(
-          timestamp: DateTime.now().subtract(Duration(days: 10)),
-          note: "Only protein caffe latte.",
-        ),
-      ]),
+      List.generate(300, (index) {
+        return TimestampWithNote(
+          timestamp: RandomDate.withRange(2025, 2025).random(),
+          note: index % 4 == 0 ? "Trained for 2 hours." : "",
+        );
+      }).toList(),
+    ),
+    Habit(
+      "Get Brown",
+      "Be ready for the summer",
+      "2600-FE0F",
+      Colors.yellow.toARGB32().toRadixString(16),
+      HabitCategory.nutrition.value,
+      List.generate(300, (index) {
+        return TimestampWithNote(
+          timestamp: RandomDate.withRange(2025, 2025).random(),
+          note: index % 4 == 0 ? "Trained for 2 hours." : "",
+        );
+      }).toList(),
     ),
   ]);
 }

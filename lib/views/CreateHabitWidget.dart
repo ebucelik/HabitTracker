@@ -48,7 +48,6 @@ class _CreateHabitWidgetState extends State<CreateHabitWidget> {
     UnicodeEmojis.search("smile").first.unified,
     Colors.blue.toARGB32().toRadixString(16),
     "",
-    false,
     List.of([], growable: true),
   );
 

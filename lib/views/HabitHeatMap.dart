@@ -10,7 +10,6 @@ import 'package:habit_tracker/views/HeatMap/heatmap.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
-import 'package:purchases_ui_flutter/paywall_result.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
 
 class HabitHeatMap extends StatefulWidget {
@@ -89,7 +88,11 @@ class _HabitHeatMapState extends State<HabitHeatMap> {
     return HeatMap(
       colorsets: {1: color(widget.habit.color)},
       colorMode: ColorMode.color,
-      fontSize: widget.isScaled ? 10 : 6,
+      fontSize: AppData.instance.isEntitled
+          ? widget.isScaled
+                ? 10
+                : 6
+          : 0,
       defaultColor: color(widget.habit.color).withAlpha(50),
       datasets: {
         for (var timestamp in widget.habit.timestamps)
