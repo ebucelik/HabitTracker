@@ -28,6 +28,17 @@ class HomeWidgetState extends State<HomeWidget> {
 
   StreamSubscription? habitStream;
 
+  void _checkIfCustomerIsEntitled() async {
+    CustomerInfo customerInfo = await Purchases.getCustomerInfo();
+
+    if (customerInfo.entitlements.all[entitlementID] != null &&
+        customerInfo.entitlements.all[entitlementID]?.isActive == true) {
+      AppData.instance.isEntitled = true;
+    } else {
+      AppData.instance.isEntitled = false;
+    }
+  }
+
   void presentPaywall() async {
     CustomerInfo customerInfo = await Purchases.getCustomerInfo();
 
@@ -78,6 +89,7 @@ class HomeWidgetState extends State<HomeWidget> {
   void initState() {
     super.initState();
 
+    _checkIfCustomerIsEntitled();
     _getHabits();
   }
 
@@ -118,18 +130,25 @@ class HomeWidgetState extends State<HomeWidget> {
           ],
         ),
         actions: [
-          Container(
-            height: 30,
-            padding: EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(6),
-              border: Border.all(color: Theme.of(context).colorScheme.primary),
-            ),
-            child: GestureDetector(
-              onTap: () => presentPaywall(),
-              child: Text("PRO", style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ),
+          AppData.instance.isEntitled
+              ? Container()
+              : Container(
+                  height: 30,
+                  padding: EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  child: GestureDetector(
+                    onTap: () => presentPaywall(),
+                    child: Text(
+                      "PRO",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
           IconButton(
             onPressed: () {
               if (habits.length > 2 && !AppData.instance.isEntitled) {
