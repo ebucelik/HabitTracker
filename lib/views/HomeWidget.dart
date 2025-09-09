@@ -244,16 +244,24 @@ class HomeWidgetState extends State<HomeWidget> {
                     children: [
                       TextButton(
                         onPressed: () {
-                          _launchUrl(Uri.parse('https://ebucelik.dev'));
+                          _launchUrl(
+                            Uri.parse(
+                              'https://www.nextgen-apps.com/en/habittracker-terms-of-use.html',
+                            ),
+                          );
                         },
                         child: Text(
-                          "Terms of use",
+                          "Terms of Use",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                       ),
                       TextButton(
                         onPressed: () {
-                          _launchUrl(Uri.parse('https://ebucelik.dev'));
+                          _launchUrl(
+                            Uri.parse(
+                              'https://www.nextgen-apps.com/en/habittracker-privacy-policy.html',
+                            ),
+                          );
                         },
                         child: Text(
                           "Privacy Policy",
