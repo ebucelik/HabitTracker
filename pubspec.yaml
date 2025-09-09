@@ -1,7 +1,7 @@
 name: habit_tracker
 description: "A new Flutter project."
 publish_to: 'none'
-version: 1.0.0+6
+version: 1.0.0+7
 
 environment:
   sdk: ^3.9.0
@@ -23,6 +23,7 @@ dependencies:
   random_date: ^0.0.7
   shared_preferences: ^2.5.3
   unicode_emojis: ^0.4.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:

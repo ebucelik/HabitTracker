@@ -15,6 +15,7 @@ import 'package:habit_tracker/views/HabitWidget.dart';
 import 'package:provider/provider.dart';
 import 'package:purchases_flutter/purchases_flutter.dart';
 import 'package:purchases_ui_flutter/purchases_ui_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomeWidget extends StatefulWidget {
   const HomeWidget({super.key});
@@ -233,10 +234,45 @@ class HomeWidgetState extends State<HomeWidget> {
                   ),
                 ),
               ] +
-              habitList(),
+              habitList() +
+              [
+                Container(
+                  margin: EdgeInsets.only(top: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    spacing: 8,
+                    children: [
+                      TextButton(
+                        onPressed: () {
+                          _launchUrl(Uri.parse('https://ebucelik.dev'));
+                        },
+                        child: Text(
+                          "Terms of use",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          _launchUrl(Uri.parse('https://ebucelik.dev'));
+                        },
+                        child: Text(
+                          "Privacy Policy",
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
         ),
       ),
     );
+  }
+
+  Future<void> _launchUrl(Uri url) async {
+    if (!await launchUrl(url)) {
+      throw Exception('Could not launch $url');
+    }
   }
 
   List<Widget> habitList() {
